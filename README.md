@@ -1,111 +1,81 @@
-<h1 align="center">Jellyfin Web</h1>
-<h3 align="center">Part of the <a href="https://jellyfin.org">Jellyfin Project</a></h3>
+# Custom Jellyfin Web (netflixfin)
 
----
+A customized build of [jellyfin-web](https://github.com/jellyfin/jellyfin-web)
+**v10.11.8** that brings Netflix/Hulu-style UX to a self-hosted Jellyfin server —
+without leaning on any Netflix branding or trademarks. Just a cleaner, more
+premium dark interface and a handful of quality-of-life features.
 
-<p align="center">
-<img alt="Logo Banner" src="https://raw.githubusercontent.com/jellyfin/jellyfin-ux/master/branding/SVG/banner-logo-solid.svg?sanitize=true"/>
-<br/>
-<br/>
-<a href="https://github.com/jellyfin/jellyfin-web">
-<img alt="GPL 2.0 License" src="https://img.shields.io/github/license/jellyfin/jellyfin-web.svg"/>
-</a>
-<a href="https://github.com/jellyfin/jellyfin-web/releases">
-<img alt="Current Release" src="https://img.shields.io/github/release/jellyfin/jellyfin-web.svg"/>
-</a>
-<a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-web/?utm_source=widget">
-<img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/svg-badge.svg" alt="Translation Status"/>
-</a>
-<br/>
-<a href="https://opencollective.com/jellyfin">
-<img alt="Donate" src="https://img.shields.io/opencollective/all/jellyfin.svg?label=backers"/>
-</a>
-<a href="https://features.jellyfin.org">
-<img alt="Feature Requests" src="https://img.shields.io/badge/fider-vote%20on%20features-success.svg"/>
-</a>
-<a href="https://matrix.to/#/+jellyfin:matrix.org">
-<img alt="Chat on Matrix" src="https://img.shields.io/matrix/jellyfin:matrix.org.svg?logo=matrix"/>
-</a>
-<a href="https://www.reddit.com/r/jellyfin">
-<img alt="Join our Subreddit" src="https://img.shields.io/badge/reddit-r%2Fjellyfin-%23FF5700.svg"/>
-</a>
-</p>
+## Features
 
-Jellyfin Web is the frontend used for most of the clients available for end users, such as desktop browsers, Android, and iOS. We welcome all contributions and pull requests! If you have a larger feature in mind please open an issue so we can discuss the implementation before you start. Translations can be improved very easily from our <a href="https://translate.jellyfin.org/projects/jellyfin/jellyfin-web">Weblate</a> instance. Look through the following graphic to see if your native language could use some work!
+**Look & feel**
+- **Muted-teal dark theme** ("Netflix" in Settings → Display → Theme; the default
+  for new users). Near-black `#141414` background with a calm teal `#3fa7c4`
+  accent. Refined typography and spacing.
+- **Centered top nav** — `Home · <your libraries>` across the header. The
+  redundant secondary "Home / Favorites" tab strip is hidden on the home page so
+  there's a single nav.
+- **Full-bleed billboard hero** on the home page: a rotating backdrop from your
+  most recently added titles, with logo, `year · rating · runtime/seasons · genre`,
+  a synopsis, and **Play / More Info** buttons. The nav floats transparently over
+  it and gains a background as you scroll.
+- The default **"My Media"** library-tiles row is removed (the nav covers it).
+- Subtle card focus/hover scale.
 
-<a href="https://translate.jellyfin.org/engage/jellyfin/?utm_source=widget">
-<img src="https://translate.jellyfin.org/widgets/jellyfin/-/jellyfin-web/multi-auto.svg" alt="Detailed Translation Status"/>
-</a>
+**Features**
+- **Shuffle Block** — treat a Collection like a TV network block. Plays **4
+  in-order episodes per show**, switching shows in random order (never the same
+  show twice in a row). A **▶ Shuffle Block** button appears on a collection's
+  detail page, and in the right-click/⋯ menu.
+- **Clear watch history** — a ⋯-menu action on any title that marks it unplayed
+  (cascades across a whole series), removing it from Continue Watching / Next Up.
+- **Are you still watching?** — a prompt backported from Jellyfin's dev branch
+  that interrupts auto-advance after several consecutive episodes (or long idle).
+- **Subtitle quick styles** — one-tap presets (Clean / Boxed / Large / Yellow) in
+  the subtitle appearance settings, on top of Jellyfin's normal fine controls.
 
-## Build Process
+## Building
 
-### Dependencies
+Requires **Node 20** and **npm ≥ 9.6.4 < 11** (matches jellyfin-web v10.11.8).
 
-- [Node.js](https://nodejs.org/en/download)
-- npm (included in Node.js)
-
-### Getting Started
-
-1. Clone or download this repository.
-
-   ```sh
-   git clone https://github.com/jellyfin/jellyfin-web.git
-   cd jellyfin-web
-   ```
-
-2. Install build dependencies in the project directory.
-
-   ```sh
-   npm install
-   ```
-
-3. Run the web client with webpack for local development.
-
-   ```sh
-   npm start
-   ```
-
-4. Build the client with sourcemaps available.
-
-   ```sh
-   npm run build:development
-   ```
-
-## Directory Structure
-
-> [!NOTE]
-> We are in the process of refactoring to a [new structure](https://forum.jellyfin.org/t-proposed-update-to-the-structure-of-jellyfin-web) based on [Bulletproof React](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md) architecture guidelines.
-> Most new code should be organized under the appropriate app directory unless it is common/shared.
-
-```
-.
-└── src
-    ├── apps
-    │   ├── dashboard           # Admin dashboard app
-    │   ├── experimental        # New experimental app
-    │   ├── stable              # Classic (stable) app
-    │   └── wizard              # Startup wizard app
-    ├── assets                  # Static assets
-    ├── components              # Higher order visual components and React components
-    ├── constants               # Common constant values
-    ├── controllers             # Legacy page views and controllers 🧹 ❌
-    ├── elements                # Basic webcomponents and React equivalents 🧹
-    ├── hooks                   # Custom React hooks
-    ├── lib                     # Reusable libraries
-    │   ├── globalize           # Custom localization library
-    │   ├── jellyfin-apiclient  # Supporting code for the deprecated apiclient package
-    │   ├── legacy              # Polyfills for legacy browsers
-    │   ├── navdrawer           # Navigation drawer library for classic layout
-    │   └── scroller            # Content scrolling library
-    ├── plugins                 # Client plugins (features dynamically loaded at runtime)
-    ├── scripts                 # Random assortment of visual components and utilities 🐉 ❌
-    ├── strings                 # Translation files (only commit changes to en-us.json)
-    ├── styles                  # Common app Sass stylesheets
-    ├── themes                  # Sass and MUI themes
-    ├── types                   # Common TypeScript interfaces/types
-    └── utils                   # Utility functions
+```bash
+npm install
+npm run build:production   # outputs to dist/
 ```
 
-- ❌ &mdash; Deprecated, do **not** create new files here
-- 🧹 &mdash; Needs cleanup
-- 🐉 &mdash; Serious mess (Here be dragons)
+Then serve `dist/` as your Jellyfin web client (see Deployment).
+
+## Deployment
+
+This build is served from a **custom web directory** so Jellyfin package updates
+can't overwrite it:
+
+1. Build produces `dist/`.
+2. `dist/` is rsynced to `/opt/jellyfin-custom-web` (owned by the deploy user).
+3. Jellyfin is pointed there via `--webdir=/opt/jellyfin-custom-web` in
+   `/etc/default/jellyfin`.
+
+Because that directory is outside `/usr/share/jellyfin/web` (which the
+`jellyfin-web` apt package owns), upgrades leave the custom UI untouched.
+
+### Scripts (`netflixfin/`)
+
+- **`setup-webdir.sh`** — one-time (run with `sudo`): creates the custom web dir,
+  repoints `--webdir`, prunes old backups, restarts Jellyfin.
+- **`redeploy.sh`** — rebuild + deploy + publish. No sudo, no Jellyfin restart
+  (static files are served live). It commits, builds, rsyncs to the web dir, and
+  pushes to GitHub. After it runs, just hard-refresh the browser / relaunch the
+  TV app.
+
+```bash
+~/netflixfin/redeploy.sh   # the everyday command
+```
+
+## Notes
+
+- Pin the build to roughly your **server version** (this is v10.11.8). A web
+  client far ahead/behind the server can break due to API differences.
+- The theme is registered in `src/themes/themes.ts` + `src/config.json` and lives
+  in `src/themes/netflix/`. Most custom UI lives in `src/components/homesections/`
+  (billboard), `src/components/shuffleBlock.js`, `src/plugins/stillWatching/`,
+  `src/scripts/libraryMenu.js` (top nav), and `src/components/itemContextMenu.js`.
+- Based on jellyfin-web, which is licensed under **MPL-2.0**.
