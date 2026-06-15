@@ -1,4 +1,4 @@
-import confirm from 'components/confirm/confirm';
+import showStillWatchingPrompt from './prompt';
 import inputManager from 'scripts/inputManager';
 import { PluginType } from 'types/plugin.ts';
 
@@ -45,7 +45,7 @@ class StillWatching {
         const shouldPrompt = this.playedItems.size >= EPISODE_COUNT || idleTime >= IDLE_MS;
 
         if (shouldPrompt) {
-            return confirm({
+            return showStillWatchingPrompt({
                 title: 'Are you still watching?',
                 text: 'You’ve been watching for a while — continue playing?',
                 cancelText: 'Stop',

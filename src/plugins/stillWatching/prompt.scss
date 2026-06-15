@@ -1,0 +1,32 @@
+/* Clear, input-agnostic focus styling for the "Are you still watching?" prompt.
+ *
+ * Stock dialogs only show a focus effect (scale via .show-focus) under
+ * keyboard/remote navigation, and the cancel button has no dedicated style, so
+ * on a mouse there was no obvious "which button is selected" indicator and the
+ * colours did not track the pointer. Here focus drives the highlight for every
+ * input modality (prompt.js moves focus on mouseenter). */
+
+.stillWatchingDialog .btnOption {
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* The focused button is the one that will activate on Enter/click — make it
+ * unmistakable regardless of mouse vs. keyboard vs. remote. */
+.stillWatchingDialog .btnOption:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.18em #fff;
+    transform: scale(1.04);
+    z-index: 1;
+}
+
+/* Give the cancel/Stop button a real resting style so it reads as a button and
+ * is visually distinct from the teal primary action. */
+.stillWatchingDialog .button-cancel {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.stillWatchingDialog .button-cancel:focus {
+    background: rgba(255, 255, 255, 0.28);
+    color: #fff;
+}
