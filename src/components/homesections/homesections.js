@@ -14,6 +14,9 @@ import { loadNextUp } from './sections/nextUp';
 import { loadRecentlyAdded } from './sections/recentlyAdded';
 import { loadResume } from './sections/resume';
 
+import { loadGenreRows } from './sections/genreRows';
+import { loadRecommendations } from './sections/recommendations';
+
 import 'elements/emby-button/paper-icon-button-light';
 import 'elements/emby-itemscontainer/emby-itemscontainer';
 import 'elements/emby-scroller/emby-scroller';
@@ -65,6 +68,7 @@ export function loadSections(elem, apiClient, user, userSettings) {
                 elem.classList.add('homeSectionsContainer');
 
                 const promises = [];
+                const customRowOptions = { enableOverflow: enableScrollX() };
                 const sections = getAllSectionsToShow(userSettings, userSectionCount);
                 for (let i = 0; i < sections.length; i++) {
                     promises.push(loadSection(elem, apiClient, user, userSettings, userViews, sections, i));
@@ -73,6 +77,11 @@ export function loadSections(elem, apiClient, user, userSettings) {
                 return Promise.all(promises)
                 // Timeout for polyfilled CustomElements (webOS 1.2)
                     .then(() => new Promise((resolve) => setTimeout(resolve, 0)))
+                    // Netflix-style discovery rows below the stock sections: movie
+                    // "Because you watched" recs first, then a rotating set of genres.
+                    // Appended before resume() so they join the same populate sweep.
+                    .then(() => loadRecommendations(elem, apiClient, user, userViews, customRowOptions))
+                    .then(() => loadGenreRows(elem, apiClient, user, customRowOptions))
                     .then(() => {
                         return resume(elem, {
                             refresh: true
