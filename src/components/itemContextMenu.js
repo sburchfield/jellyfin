@@ -376,7 +376,7 @@ export async function getCommands(options) {
         commands.push({
             name: 'Shuffle Block',
             id: 'shuffleblock',
-            icon: 'shuffle'
+            icon: 'live_tv'
         });
     }
 
