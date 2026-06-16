@@ -462,22 +462,33 @@ html {
 }
 
 .card .cardScalable {
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    transition:
+        transform var(--nf-dur) var(--nf-ease-out),
+        box-shadow var(--nf-dur) var(--nf-ease-out);
+    transition-delay: 0s; /* reverse immediately on leave */
     transform-origin: center center;
 }
 
+/* Hover-intent: wait briefly before zooming so scanning a row does not fire a
+   storm of zooms. The delay only applies on the way in (base rule resets it). */
 @media (hover: hover) and (pointer: fine) {
     .card:hover .cardScalable {
-        transform: scale(1.12);
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
-        z-index: 2;
+        transform: scale(1.08);
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.7);
+        z-index: 3;
+        transition-delay: 140ms;
     }
 }
 
 .card:focus .cardScalable {
-    transform: scale(1.12);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
-    z-index: 2;
+    transform: scale(1.08);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.7);
+    z-index: 3;
+}
+
+/* Lighter shadow on the TV — cheaper to composite on low-power WebOS. */
+.layout-tv .card:focus .cardScalable {
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6);
 }
 
 .card:focus .cardBox.visualCardBox,
@@ -668,4 +679,75 @@ html {
    (Library pages keep their sub-tabs since those are not redundant.) */
 .skinHeader.noHomeButtonHeader .headerTabs {
     display: none !important;
+}
+
+
+/* ----------------------------------------------------------------------
+   Motion & transition polish
+   One easing vocabulary + restrained, "expensive" motion. Rich bits are gated
+   to pointer/desktop; the low-power TV (WebOS) stays lean, and we honor
+   prefers-reduced-motion.
+   ---------------------------------------------------------------------- */
+
+:root {
+    --nf-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* smooth settle */
+    --nf-ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* premium expo-out */
+    --nf-dur-fast: 120ms;
+    --nf-dur: 220ms;
+}
+
+/* Interactive chrome glides between states instead of snapping colours. */
+.paper-icon-button-light,
+.listItem,
+.navMenuOption,
+.emby-tab-button,
+.alphaPickerButton,
+.cardOverlayButton,
+.actionSheetMenuItem {
+    transition:
+        background-color var(--nf-dur-fast) var(--nf-ease),
+        color var(--nf-dur-fast) var(--nf-ease),
+        box-shadow var(--nf-dur-fast) var(--nf-ease);
+}
+
+/* Pages fade in instead of hard-cutting. Opacity only: a transform/filter here
+   would establish a containing block and break the position:fixed billboard
+   backdrop mid-animation. */
+@media (prefers-reduced-motion: no-preference) {
+    .mainAnimatedPage {
+        animation: nf-page-in var(--nf-dur) var(--nf-ease-out);
+    }
+
+    /* Snappier with a remote — no lingering fade while navigating on the TV. */
+    .layout-tv .mainAnimatedPage {
+        animation-duration: var(--nf-dur-fast);
+    }
+}
+
+@keyframes nf-page-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Smooth the curve of Jellyfin's existing lazy-image fade-in. */
+.lazy-image-fadein {
+    animation-timing-function: var(--nf-ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mainAnimatedPage {
+        animation: none;
+    }
+
+    .card .cardScalable,
+    .card:hover .cardScalable,
+    .card:focus .cardScalable {
+        transition: none;
+        transition-delay: 0s;
+    }
 }
