@@ -522,6 +522,13 @@ html {
    clip it. A soft inner glow, not a hard outline. */
 .layout-tv .card:focus .cardImageContainer {
     box-shadow: inset 0 0 0.8em rgba(var(--card-accent), 0.55);
+
+    /* WebKit/WebOS drops a descendant's border-radius when an ANCESTOR is
+       transformed — so the focused card's scale() squared its corners (only
+       the focused card; unfocused ones round fine). Promote the image to its
+       own compositing layer so its rounded corners are rasterised before the
+       parent scale is applied. Only the focused card, so just one extra layer. */
+    transform: translateZ(0);
 }
 
 /* Float the focused row above its neighbours so the lift isn't painted over by
