@@ -1012,8 +1012,16 @@ function buildCard(index, item, apiClient, options) {
     }
 
     if (layoutManager.tv) {
-        // Don't use the IMG tag with safari because it puts a white border around it
-        cardImageContainerOpen = imgUrl ? ('<div class="' + cardImageContainerClasses + ' ' + cardContentClass + ' lazy" data-src="' + imgUrl + '" ' + blurhashAttrib + '>') : ('<div class="' + cardImageContainerClasses + ' ' + cardContentClass + '">');
+        // Use a real <img> (object-fit: cover) inside the container instead of a
+        // background-image on the container itself. An <img>'s rounded corners
+        // survive the focus scale transform on WebOS, where a background-image's
+        // corners are rasterised square. The lazy loader already fills an <img>'s
+        // src (imageLoader: tagName === 'IMG'), and the blurhash placeholder is
+        // inserted as the <img>'s previous sibling, so the pipeline is unchanged.
+        cardImageContainerOpen = '<div class="' + cardImageContainerClasses + ' ' + cardContentClass + '">';
+        if (imgUrl) {
+            cardImageContainerOpen += '<img class="cardImg lazy" alt="" data-src="' + imgUrl + '" ' + blurhashAttrib + ' />';
+        }
 
         cardImageContainerClose = '</div>';
     } else {
