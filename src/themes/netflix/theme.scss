@@ -529,7 +529,7 @@ html {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: inherit;
+    border-radius: var(--card-radius);
     border: 0;
     display: block;
 }
@@ -551,6 +551,14 @@ html {
 .layout-tv .emby-scroller:focus-within {
     position: relative;
     z-index: 4;
+}
+
+/* Lift the focused card above the cards beside it. When it scales up it overlaps
+   its neighbours; without a winning z-index the opaque neighbour paints over its
+   edge — cutting it off and hiding the rounded corners (so it reads square). */
+.layout-tv .card:focus {
+    z-index: 30 !important;
+    position: relative !important;
 }
 
 /* Desktop (mouse): an outer pop on hover — desktop rows aren't tightly clipped
