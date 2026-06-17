@@ -495,9 +495,10 @@ html {
     z-index: 3;
 }
 
-/* Lighter shadow on the TV — cheaper to composite on low-power WebOS. */
+/* Tighter, lighter teal glow on the TV — cheaper to composite on low-power
+   WebOS and stays within the row's vertical padding so it isn't clipped. */
 .layout-tv .card:focus .cardScalable {
-    box-shadow: 0 9px 20px rgba(63, 167, 196, 0.55);
+    box-shadow: 0 5px 16px rgba(63, 167, 196, 0.55);
 }
 
 /* No coloured border on focus — the lift + teal shadow carry the state.
@@ -519,40 +520,73 @@ html {
     color: #f2f2f2;
 }
 
-/* Tighter vertical rhythm between home rows (Netflix sits rows closer) */
+/* Tighter vertical rhythm between home rows (Netflix sits rows close) */
 .verticalSection {
-    margin-bottom: 1.9em;
+    margin-bottom: 0.8em;
 }
 
 .homeSectionsContainer > .verticalSection:first-child {
     margin-top: 0.4em;
 }
 
-/* Pull the row title a little closer to its cards */
+/* Pull the row title close to its cards */
+.sectionTitleContainer {
+    margin: 0.5em 0;
+}
+
 .sectionTitleContainer-cards {
-    padding-top: 0.9em;
+    padding-top: 0.35em;
 }
 
-/* Tighten the left/right page gutter framing every row (default is 3.3%).
-   max() keeps device safe-area insets respected; WebOS has none so 2.2% wins. */
-.padded-left {
-    [dir="ltr"] & {
-        padding-left: max(2.2%, env(safe-area-inset-left));
-    }
-
-    [dir="rtl"] & {
-        padding-right: max(2.2%, env(safe-area-inset-right));
-    }
+/* The home rows are .emby-scroller, NOT .padded-left. This is the real left/right
+   gutter (default 3.3%); tighten it. max() keeps device safe-area insets. */
+.emby-scroller {
+    padding-left: max(1.8%, env(safe-area-inset-left));
+    padding-right: max(1.8%, env(safe-area-inset-right));
 }
 
-.padded-right {
-    [dir="ltr"] & {
-        padding-right: max(2.2%, env(safe-area-inset-right));
-    }
+/* Library/detail pages do use .padded-left — keep those tight too. */
+[dir="ltr"] .padded-left {
+    padding-left: max(1.8%, env(safe-area-inset-left));
+}
 
-    [dir="rtl"] & {
-        padding-left: max(2.2%, env(safe-area-inset-left));
-    }
+[dir="rtl"] .padded-left {
+    padding-right: max(1.8%, env(safe-area-inset-right));
+}
+
+[dir="ltr"] .padded-right {
+    padding-right: max(1.8%, env(safe-area-inset-right));
+}
+
+[dir="rtl"] .padded-right {
+    padding-left: max(1.8%, env(safe-area-inset-left));
+}
+
+/* Tighter gap between cards in a row (default margin-right is 1.2em). */
+[dir="ltr"] .itemsContainer > .card > .cardBox {
+    margin-right: 0.45em;
+}
+
+[dir="rtl"] .itemsContainer > .card > .cardBox {
+    margin-left: 0.45em;
+}
+
+/* A focused card scales up + lifts with its teal shadow, but .scrollX rows are
+   overflow-y:hidden, which clips the top/bottom (the "cutoff"). The scroller
+   frame is .emby-scroller (overflow:hidden is set inline by the scroller), so a
+   little vertical padding there gives the lift room without un-hiding overflow. */
+.layout-tv .emby-scroller {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+/* Poster fills the whole card — drop the 0.5em transparent focus border that was
+   revealing the dark card background as an inset frame. State is carried by the
+   lift + teal shadow now. Keep a small radius for the Netflix-style rounding. */
+.layout-tv .card.show-focus:not(.show-animation) .cardBox.visualCardBox,
+.layout-tv .card.show-focus:not(.show-animation) .cardBox:not(.visualCardBox) .cardScalable {
+    border-width: 0;
+    border-radius: 0.3em;
 }
 
 /* Card labels: clearer hierarchy */
