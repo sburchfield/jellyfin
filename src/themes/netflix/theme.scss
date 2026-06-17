@@ -465,18 +465,22 @@ html {
     border-radius: 0.3em;
 }
 
-/* Rounded corners on WebOS: the focused card scales via a CSS transform, and
-   WebOS fails to re-clip border-radius + overflow:hidden under a transform —
-   the corners rasterise square (and one side looked clipped). So rather than
-   clipping children, round the IMAGE element's own background, which always
-   honours border-radius, and promote it to its own compositing layer
-   (translateZ) so the rounded raster survives the parent's scale. Dropping
-   paint containment also avoids a square clip on WebOS. */
-.layout-tv .cardImageContainer {
+/* Round the image element's own background — backgrounds always honour
+   border-radius, no clipping/layer tricks needed (those make WebOS rasterise
+   the corners square under the focus transform). */
+.layout-tv .cardImageContainer,
+.layout-tv .cardContent,
+.layout-tv .cardPadder {
     border-radius: 0.3em;
-    background-clip: border-box !important;
-    contain: layout style;
-    transform: translateZ(0);
+}
+
+/* Lift the focused row above its neighbours. The focusscale classes overlap
+   rows by -1.5em to make room for the scale; without this, the next row's
+   opaque cards paint over the focused card's glow and lower corners, which
+   reads as the glow/card being "clipped on one side". */
+.layout-tv .emby-scroller:focus-within {
+    position: relative;
+    z-index: 4;
 }
 
 .card .cardScalable {
