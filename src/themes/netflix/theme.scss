@@ -465,6 +465,14 @@ html {
     border-radius: 0.3em;
 }
 
+/* Clip the whole scalable card to that rounded rect. The inner image/padder
+   layers otherwise leave some corners square (the "one side rounded, other
+   square" look). overflow:hidden here does NOT clip the card's own focus
+   box-shadow/ring — that paints outside the box — so the glow is unaffected. */
+.cardScalable {
+    overflow: hidden;
+}
+
 .card .cardScalable {
     transition:
         transform var(--nf-dur) var(--nf-ease-out),
@@ -499,13 +507,15 @@ html {
     z-index: 3;
 }
 
-/* On the TV: a tighter, symmetric teal halo and a slightly smaller lift so the
-   whole thing fits inside the row's vertical padding (rows are overflow:hidden,
-   so anything taller gets clipped). Symmetric (no vertical offset) keeps the
-   glow's top and bottom reach equal and minimal. Also cheaper on WebOS. */
+/* On the TV: a crisp teal ring hugging the card outline plus a soft halo, so
+   it's obvious which card is focused. Both are outset shadows (outside the box,
+   never clipped by the card's own overflow:hidden) and fit inside the 1.5em
+   focusscale room. Symmetric — no vertical offset — for even top/bottom reach. */
 .layout-tv .card:focus .cardScalable {
     transform: scale(1.06);
-    box-shadow: 0 0 12px rgba(63, 167, 196, 0.6);
+    box-shadow:
+        0 0 0 0.16em rgba(63, 167, 196, 0.95),
+        0 0 1em 0.12em rgba(63, 167, 196, 0.55);
 }
 
 /* No coloured border on focus — the lift + teal shadow carry the state.
@@ -527,11 +537,9 @@ html {
     color: #f2f2f2;
 }
 
-/* Tighter vertical rhythm between home rows (Netflix sits rows close). Kept
-   small because the scroller now carries vertical padding for the focus lift;
-   this margin is the gap on top of that. */
+/* Tighter vertical rhythm between home rows (Netflix sits rows close). */
 .verticalSection {
-    margin-bottom: 0.35em;
+    margin-bottom: 0.5em;
 }
 
 .homeSectionsContainer > .verticalSection:first-child {
@@ -580,14 +588,11 @@ html {
     margin-left: 0.45em;
 }
 
-/* A focused card scales up + lifts with its teal shadow, but .scrollX rows are
-   overflow-y:hidden, which clips the top/bottom (the "cutoff"). The scroller
-   frame is .emby-scroller (overflow:hidden is set inline by the scroller), so a
-   little vertical padding there gives the lift room without un-hiding overflow. */
-.layout-tv .emby-scroller {
-    padding-top: 0.9em;
-    padding-bottom: 0.9em;
-}
+/* NOTE on the focus-lift "cutoff": home rows already carry
+   .padded-top/bottom-focusscale, which gives 1.5em of vertical room for the
+   focus scale with a cancelling negative margin (so it costs no row spacing).
+   Do NOT override .emby-scroller padding-top/bottom here — that shrinks the
+   room and re-clips the glow. Rely on the built-in focusscale room instead. */
 
 /* Poster fills the whole card — drop the 0.5em transparent focus border that was
    revealing the dark card background as an inset frame. State is carried by the
