@@ -450,83 +450,88 @@ html {
     color: #3fa7c4 !important;
 }
 
-/* ----------------------------------------------------------------------
-   Netflix signature: cards pop out on focus (TV remote) / hover (mouse)
-   ---------------------------------------------------------------------- */
+/* ════════════════════════════════════════════════════════════════════════
+   MODERN CARD MODULE
+   Single source of truth for how cards look and behave on focus. Tune the
+   whole system from the tokens below — radius, lift, dim, accent colour.
+   Modern CSS only: custom properties, border-radius, one focus rule. The only
+   legacy bit touched is neutralising contain:strict, which squared the corners
+   under the focus transform.
+   ════════════════════════════════════════════════════════════════════════ */
+:root {
+    --card-radius: 0.32em;          /* corner rounding on every card */
+    --card-focus-scale: 1.08;       /* how much a focused card lifts */
+    --card-dim: 0.8;                /* brightness of non-focused cards on TV */
+    --card-accent: 63, 167, 196;    /* teal accent as r,g,b for rgba() */
+}
 
-/* One consistent corner radius on every card surface, focused or not, so the
-   rounding doesn't change as focus moves across a row. */
+/* Consistent rounding on every card surface, focused or not. */
 .cardImageContainer,
 .cardImage,
 .cardContent,
 .cardPadder,
-.cardBox.visualCardBox,
-.cardScalable {
-    border-radius: 0.3em;
+.cardScalable,
+.cardBox.visualCardBox {
+    border-radius: var(--card-radius);
 }
 
-/* Round the image element's own background — backgrounds always honour
-   border-radius, no clipping/layer tricks needed (those make WebOS rasterise
-   the corners square under the focus transform). */
-.layout-tv .cardImageContainer,
-.layout-tv .cardContent,
-.layout-tv .cardPadder {
-    border-radius: 0.3em;
+/* Neutralise the legacy corner-killer: contain:strict (paint containment)
+   rasterises the rounded corners square under the focus transform on WebOS.
+   Keep layout/style containment — cheap, and what the perf opt actually needed. */
+.cardScalable .cardImageContainer {
+    contain: layout style;
 }
 
-/* Lift the focused row above its neighbours. The focusscale classes overlap
-   rows by -1.5em to make room for the scale; without this, the next row's
-   opaque cards paint over the focused card's glow and lower corners, which
-   reads as the glow/card being "clipped on one side". */
+/* GPU-only transitions (transform/opacity). No box-shadow animation — repainting
+   a blurred shadow every frame is what stutters on the low-power TV. */
+.card .cardScalable {
+    transition:
+        transform var(--nf-dur-fast) var(--nf-ease-out),
+        opacity var(--nf-dur-fast) var(--nf-ease-out);
+    transform-origin: center center;
+}
+
+/* ---- Focus, the modern way ----------------------------------------------
+   Every cue here is reliable on a TV: none of it is an outer shadow (the
+   scroller clips those) or a hard border. Dim the rest; lift + a soft teal
+   inner glow on the one you're on. */
+
+/* TV: non-focused cards sit back; the focused one is full-strength + lifted. */
+.layout-tv .itemsContainer .card .cardScalable {
+    opacity: var(--card-dim);
+}
+
+.layout-tv .itemsContainer .card:focus .cardScalable {
+    opacity: 1;
+    transform: scale(var(--card-focus-scale));
+}
+
+/* Teal accent on the focused card — inset, so the row's overflow can never
+   clip it. A soft inner glow, not a hard outline. */
+.layout-tv .card:focus .cardImageContainer {
+    box-shadow: inset 0 0 0.8em rgba(var(--card-accent), 0.55);
+}
+
+/* Float the focused row above its neighbours so the lift isn't painted over by
+   the next row (the focusscale classes overlap rows with a -1.5em margin). */
 .layout-tv .emby-scroller:focus-within {
     position: relative;
     z-index: 4;
 }
 
-.card .cardScalable {
-    transition:
-        transform var(--nf-dur) var(--nf-ease-out),
-        box-shadow var(--nf-dur) var(--nf-ease-out);
-    transition-delay: 0s; /* reverse immediately on leave */
-    transform-origin: center center;
-}
-
-/* WebOS is GPU-limited: animating box-shadow forces a full repaint of the
-   blurred shadow every frame, which is what makes row navigation stutter on
-   the TV. There we transition only the (compositor-only) transform and let the
-   shadow snap in with the focused card's already-rasterised layer. A shorter
-   duration also makes scanning a row feel snappy/tight like Netflix. */
-.layout-tv .card .cardScalable {
-    transition: transform var(--nf-dur-fast) var(--nf-ease-out);
-}
-
-/* Hover-intent: wait briefly before zooming so scanning a row does not fire a
-   storm of zooms. The delay only applies on the way in (base rule resets it). */
+/* Desktop (mouse): an outer pop on hover — desktop rows aren't tightly clipped
+   and there's no remote-focus dimming there. */
 @media (hover: hover) and (pointer: fine) {
     .card:hover .cardScalable {
-        transform: scale(1.08);
-        box-shadow: 0 14px 30px rgba(63, 167, 196, 0.5);
+        transform: scale(1.06);
+        box-shadow: 0 12px 28px rgba(var(--card-accent), 0.45);
         z-index: 3;
-        transition-delay: 140ms;
+        transition-delay: 120ms;
     }
 }
 
-.card:focus .cardScalable {
-    transform: scale(1.08);
-    box-shadow: 0 14px 30px rgba(63, 167, 196, 0.5);
-    z-index: 3;
-}
-
-/* On the TV: a bright soft teal glow (no hard ring/border) so it's clearly
-   visible which card is focused without looking like an outlined box. It's an
-   outset shadow that fits inside the row's 1.5em focusscale room. */
-.layout-tv .card:focus .cardScalable {
-    transform: scale(1.06);
-    box-shadow: 0 0 1.1em 0.1em rgba(63, 167, 196, 0.85);
-}
-
-/* No coloured border on focus — the lift + teal shadow carry the state.
-   Keep the (transparent) border so the layout/scale geometry is unchanged. */
+/* Never draw the legacy coloured focus border (it produced the dark inset
+   frame); the cues above carry focus state. */
 .card:focus .cardBox.visualCardBox,
 .card:focus .cardBox:not(.visualCardBox) .cardScalable {
     border-color: transparent !important;
@@ -607,7 +612,7 @@ html {
 .layout-tv .card.show-focus:not(.show-animation) .cardBox.visualCardBox,
 .layout-tv .card.show-focus:not(.show-animation) .cardBox:not(.visualCardBox) .cardScalable {
     border-width: 0;
-    border-radius: 0.3em;
+    border-radius: var(--card-radius);
 }
 
 /* Card labels: clearer hierarchy */
