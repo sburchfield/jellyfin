@@ -483,7 +483,7 @@ html {
 @media (hover: hover) and (pointer: fine) {
     .card:hover .cardScalable {
         transform: scale(1.08);
-        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.7);
+        box-shadow: 0 14px 30px rgba(63, 167, 196, 0.5);
         z-index: 3;
         transition-delay: 140ms;
     }
@@ -491,18 +491,20 @@ html {
 
 .card:focus .cardScalable {
     transform: scale(1.08);
-    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 14px 30px rgba(63, 167, 196, 0.5);
     z-index: 3;
 }
 
 /* Lighter shadow on the TV — cheaper to composite on low-power WebOS. */
 .layout-tv .card:focus .cardScalable {
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 9px 20px rgba(63, 167, 196, 0.55);
 }
 
+/* No coloured border on focus — the lift + teal shadow carry the state.
+   Keep the (transparent) border so the layout/scale geometry is unchanged. */
 .card:focus .cardBox.visualCardBox,
 .card:focus .cardBox:not(.visualCardBox) .cardScalable {
-    border-color: #3fa7c4 !important;
+    border-color: transparent !important;
 }
 
 /* ----------------------------------------------------------------------
@@ -517,13 +519,40 @@ html {
     color: #f2f2f2;
 }
 
-/* More breathing room between home rows */
+/* Tighter vertical rhythm between home rows (Netflix sits rows closer) */
 .verticalSection {
-    margin-bottom: 2.6em;
+    margin-bottom: 1.9em;
 }
 
 .homeSectionsContainer > .verticalSection:first-child {
     margin-top: 0.4em;
+}
+
+/* Pull the row title a little closer to its cards */
+.sectionTitleContainer-cards {
+    padding-top: 0.9em;
+}
+
+/* Tighten the left/right page gutter framing every row (default is 3.3%).
+   max() keeps device safe-area insets respected; WebOS has none so 2.2% wins. */
+.padded-left {
+    [dir="ltr"] & {
+        padding-left: max(2.2%, env(safe-area-inset-left));
+    }
+
+    [dir="rtl"] & {
+        padding-right: max(2.2%, env(safe-area-inset-right));
+    }
+}
+
+.padded-right {
+    [dir="ltr"] & {
+        padding-right: max(2.2%, env(safe-area-inset-right));
+    }
+
+    [dir="rtl"] & {
+        padding-left: max(2.2%, env(safe-area-inset-left));
+    }
 }
 
 /* Card labels: clearer hierarchy */

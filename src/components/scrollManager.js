@@ -10,7 +10,7 @@ import layoutManager from './layoutManager';
 /**
      * Scroll time in ms.
      */
-const ScrollTime = 270;
+const ScrollTime = 200;
 
 /**
      * Epsilon for comparing values.
