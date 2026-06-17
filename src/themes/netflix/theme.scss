@@ -469,6 +469,15 @@ html {
     transform-origin: center center;
 }
 
+/* WebOS is GPU-limited: animating box-shadow forces a full repaint of the
+   blurred shadow every frame, which is what makes row navigation stutter on
+   the TV. There we transition only the (compositor-only) transform and let the
+   shadow snap in with the focused card's already-rasterised layer. A shorter
+   duration also makes scanning a row feel snappy/tight like Netflix. */
+.layout-tv .card .cardScalable {
+    transition: transform var(--nf-dur-fast) var(--nf-ease-out);
+}
+
 /* Hover-intent: wait briefly before zooming so scanning a row does not fire a
    storm of zooms. The delay only applies on the way in (base rule resets it). */
 @media (hover: hover) and (pointer: fine) {
