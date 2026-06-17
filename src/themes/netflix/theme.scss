@@ -454,11 +454,15 @@ html {
    Netflix signature: cards pop out on focus (TV remote) / hover (mouse)
    ---------------------------------------------------------------------- */
 
+/* One consistent corner radius on every card surface, focused or not, so the
+   rounding doesn't change as focus moves across a row. */
 .cardImageContainer,
 .cardImage,
+.cardContent,
+.cardPadder,
 .cardBox.visualCardBox,
 .cardScalable {
-    border-radius: 4px;
+    border-radius: 0.3em;
 }
 
 .card .cardScalable {
@@ -495,10 +499,13 @@ html {
     z-index: 3;
 }
 
-/* Tighter, lighter teal glow on the TV — cheaper to composite on low-power
-   WebOS and stays within the row's vertical padding so it isn't clipped. */
+/* On the TV: a tighter, symmetric teal halo and a slightly smaller lift so the
+   whole thing fits inside the row's vertical padding (rows are overflow:hidden,
+   so anything taller gets clipped). Symmetric (no vertical offset) keeps the
+   glow's top and bottom reach equal and minimal. Also cheaper on WebOS. */
 .layout-tv .card:focus .cardScalable {
-    box-shadow: 0 5px 16px rgba(63, 167, 196, 0.55);
+    transform: scale(1.06);
+    box-shadow: 0 0 12px rgba(63, 167, 196, 0.6);
 }
 
 /* No coloured border on focus — the lift + teal shadow carry the state.
@@ -520,9 +527,11 @@ html {
     color: #f2f2f2;
 }
 
-/* Tighter vertical rhythm between home rows (Netflix sits rows close) */
+/* Tighter vertical rhythm between home rows (Netflix sits rows close). Kept
+   small because the scroller now carries vertical padding for the focus lift;
+   this margin is the gap on top of that. */
 .verticalSection {
-    margin-bottom: 0.8em;
+    margin-bottom: 0.35em;
 }
 
 .homeSectionsContainer > .verticalSection:first-child {
@@ -576,8 +585,8 @@ html {
    frame is .emby-scroller (overflow:hidden is set inline by the scroller), so a
    little vertical padding there gives the lift room without un-hiding overflow. */
 .layout-tv .emby-scroller {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
+    padding-top: 0.9em;
+    padding-bottom: 0.9em;
 }
 
 /* Poster fills the whole card — drop the 0.5em transparent focus border that was
