@@ -475,11 +475,23 @@ html {
     border-radius: var(--card-radius);
 }
 
-/* Neutralise the legacy corner-killer: contain:strict (paint containment)
-   rasterises the rounded corners square under the focus transform on WebOS.
-   Keep layout/style containment — cheap, and what the perf opt actually needed. */
+/* Neutralise two legacy bits that break rounding on WebOS:
+   1. contain:strict (paint containment) rasterises the rounded corners square
+      under the focus transform — keep only layout/style containment.
+   2. .cardContent is over-constrained: top/left/right/bottom:0 AND
+      width/height:100%. WebOS resolves that by anchoring the element
+      bottom-right and overflowing top-left, so three rounded corners get pushed
+      outside the card and clipped (only the bottom-right shows rounded). Size it
+      unambiguously (auto width/height, pinned by the four offsets) so it fills
+      the card exactly and every corner sits inside it. */
 .cardScalable .cardImageContainer {
     contain: layout style;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    height: auto;
 }
 
 /* GPU-only transitions (transform/opacity). No box-shadow animation — repainting
