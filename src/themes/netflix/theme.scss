@@ -465,12 +465,18 @@ html {
     border-radius: 0.3em;
 }
 
-/* Clip the whole scalable card to that rounded rect. The inner image/padder
-   layers otherwise leave some corners square (the "one side rounded, other
-   square" look). overflow:hidden here does NOT clip the card's own focus
-   box-shadow/ring — that paints outside the box — so the glow is unaffected. */
-.cardScalable {
-    overflow: hidden;
+/* Rounded corners on WebOS: the focused card scales via a CSS transform, and
+   WebOS fails to re-clip border-radius + overflow:hidden under a transform —
+   the corners rasterise square (and one side looked clipped). So rather than
+   clipping children, round the IMAGE element's own background, which always
+   honours border-radius, and promote it to its own compositing layer
+   (translateZ) so the rounded raster survives the parent's scale. Dropping
+   paint containment also avoids a square clip on WebOS. */
+.layout-tv .cardImageContainer {
+    border-radius: 0.3em;
+    background-clip: border-box !important;
+    contain: layout style;
+    transform: translateZ(0);
 }
 
 .card .cardScalable {
@@ -507,15 +513,12 @@ html {
     z-index: 3;
 }
 
-/* On the TV: a crisp teal ring hugging the card outline plus a soft halo, so
-   it's obvious which card is focused. Both are outset shadows (outside the box,
-   never clipped by the card's own overflow:hidden) and fit inside the 1.5em
-   focusscale room. Symmetric — no vertical offset — for even top/bottom reach. */
+/* On the TV: a bright soft teal glow (no hard ring/border) so it's clearly
+   visible which card is focused without looking like an outlined box. It's an
+   outset shadow that fits inside the row's 1.5em focusscale room. */
 .layout-tv .card:focus .cardScalable {
     transform: scale(1.06);
-    box-shadow:
-        0 0 0 0.16em rgba(63, 167, 196, 0.95),
-        0 0 1em 0.12em rgba(63, 167, 196, 0.55);
+    box-shadow: 0 0 1.1em 0.1em rgba(63, 167, 196, 0.85);
 }
 
 /* No coloured border on focus — the lift + teal shadow carry the state.
