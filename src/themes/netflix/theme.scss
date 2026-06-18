@@ -42,6 +42,16 @@ html {
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 10%, transparent 100%);
 }
 
+/* netflixfin: make the WebOS/TV header behave like the web client.
+   Upstream (librarybrowser.scss) pins the TV header to position:relative, which
+   puts it in normal flow so it pushes the hero down by the header height and
+   cuts it off (and the header scrolls away, re-rendering oddly). Library pages
+   already reserve padding-top for a floating header, and home has none so the
+   hero bleeds up behind the transparent gradient — exactly the web behaviour. */
+.layout-tv .skinHeader {
+    position: fixed;
+}
+
 .pageTitleWithDefaultLogo {
     background-image: url(@jellyfin/ux-web/banner-light.png);
 }
