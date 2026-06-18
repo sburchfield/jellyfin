@@ -460,9 +460,8 @@ html {
    ════════════════════════════════════════════════════════════════════════ */
 :root {
     --card-radius: 0.32em;          /* corner rounding on every card */
-    --card-focus-scale: 1.08;       /* how much a focused card lifts */
-    --card-dim: 0.8;                /* brightness of non-focused cards on TV */
-    --card-accent: 63, 167, 196;    /* teal accent as r,g,b for rgba() */
+    --card-dim: 0.62;               /* opacity of non-focused cards on TV */
+    --card-accent: 0, 194, 255;     /* cyan focus accent as r,g,b for rgba() */
 }
 
 /* Consistent rounding on every card surface, focused or not. */
@@ -503,19 +502,25 @@ html {
     transform-origin: center center;
 }
 
-/* ---- Focus, the modern way ----------------------------------------------
-   Every cue here is reliable on a TV: none of it is an outer shadow (the
-   scroller clips those) or a hard border. Dim the rest; lift + a soft teal
-   inner glow on the one you're on. */
-
-/* TV: non-focused cards sit back; the focused one is full-strength + lifted. */
-.layout-tv .itemsContainer .card .cardScalable {
+/* ---- Focus/hover spotlight (all devices) --------------------------------
+   NO scale lift. A scaled-up card grows past its box and the scroller's
+   overflow:hidden (or a neighbour) clips it — that was every "cut off". A
+   transform also squares corners on WebOS. So the active card stays exactly in
+   its box at full strength while the rest dim back, plus the cyan outer glow.
+   Nothing grows → nothing can be clipped, and no hard border. Driven by :focus
+   (TV remote / keyboard) and :hover (mouse). */
+.itemsContainer .card .cardScalable {
     opacity: var(--card-dim);
 }
 
-.layout-tv .itemsContainer .card:focus .cardScalable {
+.itemsContainer .card:focus .cardScalable,
+.itemsContainer .card:hover .cardScalable {
     opacity: 1;
-    transform: scale(var(--card-focus-scale));
+}
+
+/* Touch devices have no hover/focus spotlight, so don't leave them dimmed. */
+.layout-mobile .itemsContainer .card .cardScalable {
+    opacity: 1;
 }
 
 /* The TV card image is a real <img> (cardBuilder emits it on the TV path).
@@ -539,37 +544,28 @@ html {
     object-fit: contain;
 }
 
-/* Teal accent on the focused card — inset on the <img> so it rounds with the
-   image and the row's overflow can never clip it. A soft inner glow, not a
-   hard outline. */
-.layout-tv .card:focus .cardImg {
-    box-shadow: inset 0 0 0.8em rgba(var(--card-accent), 0.55);
+/* Cyan outer glow on the active card. Lives on the container (not the <img>,
+   whose .cardContent has overflow:hidden which would clip an outer shadow). The
+   symmetric card margins below give it horizontal room and the focusscale
+   padding gives it vertical room, so it isn't clipped. :focus + :hover. */
+.card:focus .cardImageContainer,
+.card:hover .cardImageContainer {
+    box-shadow: 0 0 0.7em 0 rgba(var(--card-accent), 1);
 }
 
-/* Float the focused row above its neighbours so the lift isn't painted over by
+/* Float the focused row above its neighbours so the glow isn't painted over by
    the next row (the focusscale classes overlap rows with a -1.5em margin). */
-.layout-tv .emby-scroller:focus-within {
+.emby-scroller:focus-within {
     position: relative;
     z-index: 4;
 }
 
-/* Lift the focused card above the cards beside it. When it scales up it overlaps
-   its neighbours; without a winning z-index the opaque neighbour paints over its
-   edge — cutting it off and hiding the rounded corners (so it reads square). */
-.layout-tv .card:focus {
+/* Keep the active card (and its glow) above the cards beside it, so a neighbour
+   doesn't paint over the glow extending into the gap. */
+.card:focus,
+.card:hover {
     z-index: 30 !important;
     position: relative !important;
-}
-
-/* Desktop (mouse): an outer pop on hover — desktop rows aren't tightly clipped
-   and there's no remote-focus dimming there. */
-@media (hover: hover) and (pointer: fine) {
-    .card:hover .cardScalable {
-        transform: scale(1.06);
-        box-shadow: 0 12px 28px rgba(var(--card-accent), 0.45);
-        z-index: 3;
-        transition-delay: 120ms;
-    }
 }
 
 /* Never draw the legacy coloured focus border (it produced the dark inset
@@ -633,13 +629,13 @@ html {
     padding-left: max(1.8%, env(safe-area-inset-left));
 }
 
-/* Tighter gap between cards in a row (default margin-right is 1.2em). */
-[dir="ltr"] .itemsContainer > .card > .cardBox {
-    margin-right: 0.45em;
-}
-
+/* Symmetric gap on BOTH sides of every card (default is margin-right only).
+   The left margin is what gives the focus glow room and stops it clipping
+   against the neighbour / row edge. */
+[dir="ltr"] .itemsContainer > .card > .cardBox,
 [dir="rtl"] .itemsContainer > .card > .cardBox {
-    margin-left: 0.45em;
+    margin-left: 0.45rem;
+    margin-right: 0.45rem;
 }
 
 /* NOTE on the focus-lift "cutoff": home rows already carry
