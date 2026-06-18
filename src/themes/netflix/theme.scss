@@ -544,6 +544,12 @@ html {
     object-fit: contain;
 }
 
+/* Hide the episode/child-count badge (the little number circle, e.g. unplayed
+   episode count) on cards throughout the app — Netflix doesn't show it. */
+.countIndicator {
+    display: none !important;
+}
+
 /* Cyan outer glow on the active card. Lives on the container (not the <img>,
    whose .cardContent has overflow:hidden which would clip an outer shadow). The
    symmetric card margins below give it horizontal room and the focusscale

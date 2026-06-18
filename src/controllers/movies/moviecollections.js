@@ -25,7 +25,7 @@ export default function (view, params, tabContent) {
                     EnableImageTypes: 'Primary,Backdrop,Banner,Thumb',
                     StartIndex: 0
                 },
-                view: userSettings.getSavedView(key) || 'Poster'
+                view: userSettings.getSavedView(key) || 'Thumb'
             };
 
             if (userSettings.libraryPageSize() > 0) {
@@ -109,9 +109,9 @@ export default function (view, params, tabContent) {
                     shape: 'backdrop',
                     preferThumb: true,
                     context: 'movies',
-                    overlayPlayButton: true,
-                    centerText: true,
-                    showTitle: true
+                    lazy: true,
+                    showTitle: true,
+                    centerText: false
                 });
             } else if (viewStyle == 'ThumbCard') {
                 html = cardBuilder.getCardsHtml({
