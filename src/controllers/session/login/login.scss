@@ -39,12 +39,13 @@
 }
 
 .netflixProfileAvatar {
-    width: 9em;
-    height: 9em;
+    width: 8.5em;
+    height: 8.5em;
     border-radius: 0.3em;
     overflow: hidden;
     border: 0.18em solid transparent;
     box-sizing: border-box;
+    flex: 0 0 auto;
     transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
@@ -53,24 +54,28 @@
     height: 100%;
     background-size: cover;
     background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.netflixProfileAvatarDefault {
-    background: linear-gradient(135deg, #2b2b2b, #4a4a4a);
-}
-
-.netflixProfileAvatarIcon {
-    font-size: 4.5em;
-    color: rgba(255, 255, 255, 0.85);
+.netflixProfileInitial {
+    font-size: 4em;
+    font-weight: 500;
+    line-height: 1;
+    color: #fff;
 }
 
 .netflixProfileName {
     margin-top: 0.7em;
-    font-size: 1.05em;
-    max-width: 9em;
+    font-size: 1.1em;
+    color: #b3b3b3;
+    max-width: 8.5em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: center;
+    transition: color 0.2s ease;
 }
 
 /* Hover (mouse) and focus (keyboard + TV remote) highlight. */
@@ -85,6 +90,12 @@
 .netflixProfileCard:focus .netflixProfileAvatar,
 .netflixProfileCard.show-focus:focus .netflixProfileAvatar {
     border-color: #fff;
+}
+
+.netflixProfileCard:hover .netflixProfileName,
+.netflixProfileCard:focus .netflixProfileName,
+.netflixProfileCard.show-focus:focus .netflixProfileName {
+    color: #fff;
 }
 
 .netflixProfileCard.show-animation:focus .netflixProfileAvatar {

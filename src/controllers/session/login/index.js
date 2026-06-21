@@ -19,7 +19,6 @@ import Dashboard from '../../../utils/dashboard';
 import toast from '../../../components/toast/toast';
 import dialogHelper from '../../../components/dialogHelper/dialogHelper';
 import baseAlert from '../../../components/alert';
-import { getDefaultBackgroundClass } from '../../../components/cardbuilder/cardBuilderUtils';
 
 import './login.scss';
 
@@ -137,14 +136,26 @@ function showManualForm(context, showCancel, focusPassword) {
     }
 }
 
+// Deterministic accent color for a profile (used for the default
+// no-photo avatar) so each person gets a stable, distinct tile color.
+function profileColor(name) {
+    const palette = ['#3fa7c4', '#5b56c4', '#c4543f', '#3fa76b', '#a73f8e', '#c49a3f'];
+    let hash = 0;
+    for (const ch of (name || '')) {
+        hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+    }
+    return palette[hash % palette.length];
+}
+
 function loadUserList(context, apiClient, users) {
     let html = '';
 
     for (const user of users) {
-        // Netflix-style profile tile. We keep the `card` and `cardContent`
-        // classes plus the data-* attributes so the existing tap-to-auth
-        // click handler keeps working unchanged.
-        let cssClass = 'card netflixProfileCard';
+        // Netflix-style profile tile. The data-* attributes live on the
+        // button itself; the click handler reads them from .netflixProfileCard.
+        // We intentionally do NOT use the `cardContent` class here (it is
+        // position:absolute in card.scss and collapses this layout).
+        let cssClass = 'netflixProfileCard';
 
         if (layoutManager.tv) {
             cssClass += ' show-focus';
@@ -155,8 +166,8 @@ function loadUserList(context, apiClient, users) {
         }
 
         const name = escapeHtml(user.Name);
-        html += '<button type="button" class="' + cssClass + '">';
-        html += `<div class="cardContent netflixProfileAvatar" data-haspw="${user.HasPassword}" data-username="${name}" data-userid="${user.Id}">`;
+        html += `<button type="button" class="${cssClass}" data-haspw="${user.HasPassword}" data-username="${name}" data-userid="${user.Id}">`;
+        html += '<div class="netflixProfileAvatar">';
 
         if (user.PrimaryImageTag) {
             const imgUrl = apiClient.getUserImageUrl(user.Id, {
@@ -167,8 +178,9 @@ function loadUserList(context, apiClient, users) {
 
             html += '<div class="netflixProfileAvatarImage coveredImage" style="background-image:url(\'' + imgUrl + "');\"></div>";
         } else {
-            html += `<div class="netflixProfileAvatarImage netflixProfileAvatarDefault flex align-items-center justify-content-center ${getDefaultBackgroundClass()}">`;
-            html += '<span class="material-icons netflixProfileAvatarIcon person" aria-hidden="true"></span>';
+            const initial = escapeHtml((user.Name || '?').trim().charAt(0).toUpperCase() || '?');
+            html += `<div class="netflixProfileAvatarImage netflixProfileAvatarDefault" style="background-color:${profileColor(user.Name)};">`;
+            html += `<span class="netflixProfileInitial">${initial}</span>`;
             html += '</div>';
         }
 
@@ -214,14 +226,13 @@ export default function (view, params) {
     }
 
     view.querySelector('#divUsers').addEventListener('click', function (e) {
-        const card = dom.parentWithClass(e.target, 'card');
-        const cardContent = card ? card.querySelector('.cardContent') : null;
+        const card = dom.parentWithClass(e.target, 'netflixProfileCard');
 
-        if (cardContent) {
+        if (card) {
             const context = view;
-            const id = cardContent.getAttribute('data-userid');
-            const name = cardContent.getAttribute('data-username');
-            const haspw = cardContent.getAttribute('data-haspw');
+            const id = card.getAttribute('data-userid');
+            const name = card.getAttribute('data-username');
+            const haspw = card.getAttribute('data-haspw');
 
             if (id === 'manual') {
                 context.querySelector('#txtManualName').value = '';
