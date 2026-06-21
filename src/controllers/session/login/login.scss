@@ -1,3 +1,124 @@
+/* ===== Netflix-style "Who's watching?" profile gate ===== */
+.netflixProfileGate {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+}
+
+.netflixProfileGateTitle {
+    font-size: 2.4em;
+    font-weight: 400;
+    margin: 0 0 1.4em;
+    color: #fff;
+}
+
+.netflixProfileList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 60em;
+}
+
+/* Each profile tile: borderless button, avatar + name stacked. */
+.netflixProfileCard {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0 0.9em 1.6em;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #808080;
+    transition: color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.netflixProfileAvatar {
+    width: 9em;
+    height: 9em;
+    border-radius: 0.3em;
+    overflow: hidden;
+    border: 0.18em solid transparent;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.netflixProfileAvatarImage {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.netflixProfileAvatarDefault {
+    background: linear-gradient(135deg, #2b2b2b, #4a4a4a);
+}
+
+.netflixProfileAvatarIcon {
+    font-size: 4.5em;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.netflixProfileName {
+    margin-top: 0.7em;
+    font-size: 1.05em;
+    max-width: 9em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Hover (mouse) and focus (keyboard + TV remote) highlight. */
+.netflixProfileCard:hover,
+.netflixProfileCard:focus,
+.netflixProfileCard.show-focus:focus {
+    color: #fff;
+    outline: none;
+}
+
+.netflixProfileCard:hover .netflixProfileAvatar,
+.netflixProfileCard:focus .netflixProfileAvatar,
+.netflixProfileCard.show-focus:focus .netflixProfileAvatar {
+    border-color: #fff;
+}
+
+.netflixProfileCard.show-animation:focus .netflixProfileAvatar {
+    transform: scale(1.06);
+}
+
+/* De-emphasize the manual-login / change-server controls into small
+   Netflix-style footer links instead of full-width buttons. */
+.netflixLoginFooter {
+    margin: 2.5em auto 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.netflixLoginFooter .raised {
+    background: transparent;
+    box-shadow: none;
+    color: #808080;
+    text-transform: none;
+    min-width: 0;
+    width: auto;
+    margin: 0.2em 0;
+    padding: 0.3em 0.8em;
+    font-size: 0.95em;
+}
+
+.netflixLoginFooter .raised:hover,
+.netflixLoginFooter .raised:focus {
+    background: transparent;
+    color: #fff;
+    text-decoration: underline;
+}
+
 .loginDisclaimerContainer {
     display: flex;
     margin-top: 2em;

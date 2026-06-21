@@ -355,6 +355,7 @@ function refreshLibraryInfoInDrawer(user) {
         }
 
         html += `<a is="emby-linkbutton" class="navMenuOption lnkMediaFolder btnSettings" data-itemid="settings" href="#"><span class="material-icons navMenuOptionIcon settings" aria-hidden="true"></span><span class="navMenuOptionText">${globalize.translate('Settings')}</span></a>`;
+        html += '<a is="emby-linkbutton" class="navMenuOption lnkMediaFolder btnSwitchProfile" data-itemid="switchprofile" href="#"><span class="material-icons navMenuOptionIcon switch_account" aria-hidden="true"></span><span class="navMenuOptionText">Switch Profile</span></a>';
         html += `<a is="emby-linkbutton" class="navMenuOption lnkMediaFolder btnLogout" data-itemid="logout" href="#"><span class="material-icons navMenuOptionIcon exit_to_app" aria-hidden="true"></span><span class="navMenuOptionText">${globalize.translate('ButtonSignOut')}</span></a>`;
 
         if (appHost.supports(AppFeature.ExitMenu)) {
@@ -385,6 +386,11 @@ function refreshLibraryInfoInDrawer(user) {
     const btnLogout = navDrawerScrollContainer.querySelector('.btnLogout');
     if (btnLogout) {
         btnLogout.addEventListener('click', onLogoutClick);
+    }
+
+    const btnSwitchProfile = navDrawerScrollContainer.querySelector('.btnSwitchProfile');
+    if (btnSwitchProfile) {
+        btnSwitchProfile.addEventListener('click', onSwitchProfileClick);
     }
 }
 
@@ -534,6 +540,12 @@ function onExitAppClick() {
 
 function onLogoutClick() {
     Dashboard.logout();
+}
+
+function onSwitchProfileClick() {
+    // Return to the "Who's watching?" picker WITHOUT logging out, so the
+    // current user's access token is preserved and switching is instant.
+    Dashboard.navigate('login');
 }
 
 function updateCastIcon() {

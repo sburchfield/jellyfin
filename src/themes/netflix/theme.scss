@@ -52,6 +52,32 @@ html {
     position: fixed;
 }
 
+/* netflixfin: keep the section sub-tabs as a clean second row on WebOS.
+   The Netflix top-nav (.headerNavLinks) sits in the centre of .headerTop, but
+   upstream's wide-screen (>=100em) rule yanks the section sub-tabs UP into that
+   same row (margin-top:-4.3em) assuming the centre is empty — on the big TV
+   screen that stacks the two navs on top of each other. Restore the narrow/web
+   two-row layout (sub-tabs below the nav) and the matching content offsets. */
+@media all and (min-width: 100em) {
+    .layout-tv .headerTabs {
+        align-self: stretch;
+        width: 100%;
+        margin-top: 0;
+    }
+
+    .layout-tv .libraryPage:not(.noSecondaryNavPage) {
+        padding-top: 7.5em !important;
+    }
+
+    .layout-tv .pageWithAbsoluteTabs:not(.noSecondaryNavPage) {
+        padding-top: 7.5em !important;
+    }
+
+    .layout-tv .absolutePageTabContent {
+        top: 6.9em !important;
+    }
+}
+
 .pageTitleWithDefaultLogo {
     background-image: url(@jellyfin/ux-web/banner-light.png);
 }

@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import escapeHtml from 'escape-html';
 import markdownIt from 'markdown-it';
 
 import { AppFeature } from 'constants/appFeature';
@@ -140,8 +141,10 @@ function loadUserList(context, apiClient, users) {
     let html = '';
 
     for (const user of users) {
-        // TODO move card creation code to Card component
-        let cssClass = 'card squareCard scalableCard squareCard-scalable';
+        // Netflix-style profile tile. We keep the `card` and `cardContent`
+        // classes plus the data-* attributes so the existing tap-to-auth
+        // click handler keeps working unchanged.
+        let cssClass = 'card netflixProfileCard';
 
         if (layoutManager.tv) {
             cssClass += ' show-focus';
@@ -151,34 +154,26 @@ function loadUserList(context, apiClient, users) {
             }
         }
 
-        const cardBoxCssClass = 'cardBox cardBox-bottompadded';
+        const name = escapeHtml(user.Name);
         html += '<button type="button" class="' + cssClass + '">';
-        html += '<div class="' + cardBoxCssClass + '">';
-        html += '<div class="cardScalable">';
-        html += '<div class="cardPadder cardPadder-square"></div>';
-        html += `<div class="cardContent" data-haspw="${user.HasPassword}" data-username="${user.Name}" data-userid="${user.Id}">`;
-        let imgUrl;
+        html += `<div class="cardContent netflixProfileAvatar" data-haspw="${user.HasPassword}" data-username="${name}" data-userid="${user.Id}">`;
 
         if (user.PrimaryImageTag) {
-            imgUrl = apiClient.getUserImageUrl(user.Id, {
+            const imgUrl = apiClient.getUserImageUrl(user.Id, {
                 width: 300,
                 tag: user.PrimaryImageTag,
                 type: 'Primary'
             });
 
-            html += '<div class="cardImageContainer coveredImage" style="background-image:url(\'' + imgUrl + "');\"></div>";
+            html += '<div class="netflixProfileAvatarImage coveredImage" style="background-image:url(\'' + imgUrl + "');\"></div>";
         } else {
-            html += `<div class="cardImage flex align-items-center justify-content-center ${getDefaultBackgroundClass()}">`;
-            html += '<span class="material-icons cardImageIcon person" aria-hidden="true"></span>';
+            html += `<div class="netflixProfileAvatarImage netflixProfileAvatarDefault flex align-items-center justify-content-center ${getDefaultBackgroundClass()}">`;
+            html += '<span class="material-icons netflixProfileAvatarIcon person" aria-hidden="true"></span>';
             html += '</div>';
         }
 
         html += '</div>';
-        html += '</div>';
-        html += '<div class="cardFooter visualCardBox-cardFooter">';
-        html += '<div class="cardText singleCardText cardTextCentered">' + user.Name + '</div>';
-        html += '</div>';
-        html += '</div>';
+        html += '<div class="netflixProfileName">' + name + '</div>';
         html += '</button>';
     }
 
