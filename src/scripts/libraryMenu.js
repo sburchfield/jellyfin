@@ -219,7 +219,15 @@ function showSearch() {
 }
 
 function onHeaderUserButtonClick() {
-    Dashboard.navigate('mypreferencesmenu');
+    // On TV the top-right avatar is the easiest thing to reach with a remote,
+    // so make it jump straight to the "Who's watching?" picker (Netflix-style,
+    // no logout). On desktop keep it opening preferences, since the side drawer
+    // (with its Switch Profile entry) is already easy to use there.
+    if (layoutManager.tv) {
+        Dashboard.navigate('login');
+    } else {
+        Dashboard.navigate('mypreferencesmenu');
+    }
 }
 
 function onHeaderHomeButtonClick() {
