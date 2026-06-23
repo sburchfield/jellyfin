@@ -41,8 +41,13 @@ export default function (view, params, tabContent, options) {
     function shuffle() {
         isLoading = true;
         loading.show();
-        const newQuery = { ...query, SortBy: 'Random', StartIndex: 0, Limit: 300, Fields: 'PrimaryImageAspectRatio,MediaSourceCount,Chapters,Trickplay' };
-        return ApiClient.getItems(ApiClient.getCurrentUserId(), newQuery).then(({ Items }) => {
+        const userId = ApiClient.getCurrentUserId();
+        const baseQuery = { ...query, SortBy: 'Random', StartIndex: 0, Limit: 300, Fields: 'PrimaryImageAspectRatio,MediaSourceCount,Chapters,Trickplay' };
+        // Prefer unwatched movies; if every movie has been played, fall back to the
+        // whole (filtered) library so the button always plays something.
+        return ApiClient.getItems(userId, { ...baseQuery, IsPlayed: false }).then((result) => {
+            return result.Items && result.Items.length ? result : ApiClient.getItems(userId, baseQuery);
+        }).then(({ Items }) => {
             playbackManager.play({
                 items: Items,
                 autoplay: true
