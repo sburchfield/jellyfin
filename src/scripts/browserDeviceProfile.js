@@ -684,6 +684,15 @@ export default function (options) {
         }
     }
 
+    // netflixfin: webOS TVs (e.g. LG B5) have no usable 4K H.264 decoder - the H.264
+    // block tops out at 1080p/L4.2 - but do have full 4K HEVC decode. Prefer HEVC for
+    // HLS transcodes so 4K SDR content (forced to transcode by the 10-bit-HEVC keyframe
+    // workaround) stays 4K HEVC instead of becoming 4K H.264 the panel can't decode.
+    if (browser.web0s && hlsInTsVideoCodecs.includes('hevc')) {
+        hlsInTsVideoCodecs.splice(hlsInTsVideoCodecs.indexOf('hevc'), 1);
+        hlsInTsVideoCodecs.unshift('hevc');
+    }
+
     if (supportsMpeg2Video()) {
         mp4VideoCodecs.push('mpeg2video');
     }
@@ -1495,6 +1504,29 @@ export default function (options) {
         Codec: 'h264',
         Conditions: h264CodecProfileConditions
     });
+
+    // netflixfin: safety net for the HEVC-preference above - never let any H.264 reach a
+    // webOS TV above 1080p / Level 4.2, since their H.264 decoders can't handle 4K.
+    if (browser.web0s) {
+        profile.CodecProfiles.push({
+            Type: 'Video',
+            Codec: 'h264',
+            Conditions: [
+                {
+                    Condition: 'LessThanEqual',
+                    Property: 'Width',
+                    Value: '1920',
+                    IsRequired: false
+                },
+                {
+                    Condition: 'LessThanEqual',
+                    Property: 'VideoLevel',
+                    Value: '42',
+                    IsRequired: false
+                }
+            ]
+        });
+    }
 
     if (browser.web0s && supportsDolbyVision(options)) {
         // Disallow direct playing of DOVI media in containers not ts or mp4.
