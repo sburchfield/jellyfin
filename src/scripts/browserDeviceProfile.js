@@ -1519,6 +1519,33 @@ export default function (options) {
         Conditions: hevcCodecProfileConditions
     });
 
+    // netflixfin: the LG webOS browser HEVC decoder renders only keyframes on 10-bit
+    // (Main 10) streams, leaving SDR content frozen while audio keeps playing. Force
+    // those to transcode (QSV -> clean 8-bit) but leave HDR10 / Dolby Vision
+    // (legitimately 10-bit, and fine on the panel) to direct play.
+    if (browser.web0s) {
+        profile.CodecProfiles.push({
+            Type: 'Video',
+            Codec: 'hevc',
+            ApplyConditions: [
+                {
+                    Condition: 'Equals',
+                    Property: 'VideoRangeType',
+                    Value: 'SDR',
+                    IsRequired: false
+                }
+            ],
+            Conditions: [
+                {
+                    Condition: 'LessThanEqual',
+                    Property: 'VideoBitDepth',
+                    Value: '8',
+                    IsRequired: false
+                }
+            ]
+        });
+    }
+
     profile.CodecProfiles.push({
         Type: 'Video',
         Codec: 'vp9',
