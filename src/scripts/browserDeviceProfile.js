@@ -684,15 +684,6 @@ export default function (options) {
         }
     }
 
-    // netflixfin: webOS TVs (e.g. LG B5) have no usable 4K H.264 decoder - the H.264
-    // block tops out at 1080p/L4.2 - but do have full 4K HEVC decode. Prefer HEVC for
-    // HLS transcodes so 4K SDR content (forced to transcode by the 10-bit-HEVC keyframe
-    // workaround) stays 4K HEVC instead of becoming 4K H.264 the panel can't decode.
-    if (browser.web0s && hlsInTsVideoCodecs.includes('hevc')) {
-        hlsInTsVideoCodecs.splice(hlsInTsVideoCodecs.indexOf('hevc'), 1);
-        hlsInTsVideoCodecs.unshift('hevc');
-    }
-
     if (supportsMpeg2Video()) {
         mp4VideoCodecs.push('mpeg2video');
     }
@@ -1505,29 +1496,6 @@ export default function (options) {
         Conditions: h264CodecProfileConditions
     });
 
-    // netflixfin: safety net for the HEVC-preference above - never let any H.264 reach a
-    // webOS TV above 1080p / Level 4.2, since their H.264 decoders can't handle 4K.
-    if (browser.web0s) {
-        profile.CodecProfiles.push({
-            Type: 'Video',
-            Codec: 'h264',
-            Conditions: [
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'Width',
-                    Value: '1920',
-                    IsRequired: false
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'VideoLevel',
-                    Value: '42',
-                    IsRequired: false
-                }
-            ]
-        });
-    }
-
     if (browser.web0s && supportsDolbyVision(options)) {
         // Disallow direct playing of DOVI media in containers not ts or mp4.
         profile.CodecProfiles.push({
@@ -1550,42 +1518,6 @@ export default function (options) {
         Codec: 'hevc',
         Conditions: hevcCodecProfileConditions
     });
-
-    // netflixfin: the LG webOS browser HEVC decoder renders only keyframes on 10-bit
-    // (Main 10) streams, leaving SDR content frozen while audio keeps playing. Force
-    // those to transcode (QSV -> clean 8-bit) but leave HDR10 / Dolby Vision
-    // (legitimately 10-bit, and fine on the panel) to direct play.
-    if (browser.web0s) {
-        profile.CodecProfiles.push({
-            Type: 'Video',
-            Codec: 'hevc',
-            ApplyConditions: [
-                {
-                    Condition: 'Equals',
-                    Property: 'VideoRangeType',
-                    Value: 'SDR',
-                    IsRequired: false
-                },
-                {
-                    // netflixfin: 1080p 10-bit SDR HEVC direct-plays fine on webOS; only
-                    // 4K (>1080p) trips the keyframe-only decoder bug. Gate the forced
-                    // transcode on width so 1080p shows stay direct-play.
-                    Condition: 'GreaterThan',
-                    Property: 'Width',
-                    Value: '1920',
-                    IsRequired: false
-                }
-            ],
-            Conditions: [
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'VideoBitDepth',
-                    Value: '8',
-                    IsRequired: false
-                }
-            ]
-        });
-    }
 
     profile.CodecProfiles.push({
         Type: 'Video',
