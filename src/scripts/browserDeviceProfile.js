@@ -1565,6 +1565,15 @@ export default function (options) {
                     Property: 'VideoRangeType',
                     Value: 'SDR',
                     IsRequired: false
+                },
+                {
+                    // netflixfin: 1080p 10-bit SDR HEVC direct-plays fine on webOS; only
+                    // 4K (>1080p) trips the keyframe-only decoder bug. Gate the forced
+                    // transcode on width so 1080p shows stay direct-play.
+                    Condition: 'GreaterThan',
+                    Property: 'Width',
+                    Value: '1920',
+                    IsRequired: false
                 }
             ],
             Conditions: [
