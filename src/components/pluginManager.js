@@ -14,6 +14,21 @@ import * as dashboard from '../utils/dashboard';
 // TODO: replace with each plugin version
 const cacheParam = new Date().getTime();
 
+const bundledPluginLoaders = {
+    'playAccessValidation/plugin': () => import('../plugins/playAccessValidation/plugin'),
+    'stillWatching/plugin': () => import('../plugins/stillWatching/plugin'),
+    'experimentalWarnings/plugin': () => import('../plugins/experimentalWarnings/plugin'),
+    'htmlAudioPlayer/plugin': () => import('../plugins/htmlAudioPlayer/plugin'),
+    'htmlVideoPlayer/plugin': () => import('../plugins/htmlVideoPlayer/plugin'),
+    'photoPlayer/plugin': () => import('../plugins/photoPlayer/plugin'),
+    'youtubePlayer/plugin': () => import('../plugins/youtubePlayer/plugin'),
+    'backdropScreensaver/plugin': () => import('../plugins/backdropScreensaver/plugin'),
+    'logoScreensaver/plugin': () => import('../plugins/logoScreensaver/plugin'),
+    'sessionPlayer/plugin': () => import('../plugins/sessionPlayer/plugin'),
+    'chromecastPlayer/plugin': () => import('../plugins/chromecastPlayer/plugin'),
+    'syncPlay/plugin': () => import('../plugins/syncPlay/plugin')
+};
+
 class PluginManager {
     pluginsList = [];
 
@@ -94,7 +109,12 @@ class PluginManager {
                 });
             } else {
                 console.debug(`Loading plugin (via dynamic import): ${pluginSpec}`);
-                const pluginResult = await import(/* webpackChunkName: "[request]" */ `../plugins/${pluginSpec}`);
+                const pluginLoader = bundledPluginLoaders[pluginSpec];
+                if (!pluginLoader) {
+                    throw new Error(`Bundled plugin is not enabled in this build: ${pluginSpec}`);
+                }
+
+                const pluginResult = await pluginLoader();
                 plugin = new pluginResult.default;
             }
         } else if (pluginSpec.then) {

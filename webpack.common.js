@@ -8,17 +8,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { DefinePlugin, IgnorePlugin } = require('webpack');
 const packageJson = require('./package.json');
 
-const Assets = [
-    'native-promise-only/npo.js',
-    'libarchive.js/dist/worker-bundle.js',
-    'libarchive.js/dist/libarchive.wasm',
-    '@jellyfin/libass-wasm/dist/js/default.woff2',
-    '@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker.js',
-    '@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker.wasm',
-    '@jellyfin/libass-wasm/dist/js/subtitles-octopus-worker-legacy.js',
-    'pdfjs-dist/build/pdf.worker.js',
-    'libpgs/dist/libpgs.worker.js'
-];
+const Assets = [];
 
 const DEV_MODE = process.env.NODE_ENV !== 'production';
 let COMMIT_SHA = '';
@@ -63,7 +53,7 @@ const config = {
                     process.env.JELLYFIN_VERSION || 'Release'),
             __PACKAGE_JSON_NAME__: JSON.stringify(packageJson.name),
             __PACKAGE_JSON_VERSION__: JSON.stringify(packageJson.version),
-            __USE_SYSTEM_FONTS__: !!JSON.parse(process.env.USE_SYSTEM_FONTS || '0'),
+            __USE_SYSTEM_FONTS__: !!JSON.parse(process.env.USE_SYSTEM_FONTS || '1'),
             __WEBPACK_SERVE__: !!JSON.parse(process.env.WEBPACK_SERVE || '0')
         }),
         new CleanWebpackPlugin(),

@@ -195,7 +195,7 @@ function loadTranslation(translations, lang) {
 
         const url = filtered[0].path;
 
-        import(/* webpackChunkName: "[request]" */ `../../strings/${url}`).then((fileContent) => {
+        import(/* webpackChunkName: "[request]", webpackInclude: /en-us\.json$/ */ `../../strings/${url}`).then((fileContent) => {
             resolve(fileContent);
         }).catch(() => {
             resolve({});
@@ -299,4 +299,3 @@ export default {
     getIsRTL,
     getIsElementRTL
 };
-
