@@ -4,6 +4,7 @@ import 'elements/emby-button/emby-button';
 import 'components/formdialog.scss';
 import 'styles/flexstyles.scss';
 import './prompt.scss';
+import loading from 'components/loading/loading';
 
 /* Self-contained "Are you still watching?" prompt.
  *
@@ -83,8 +84,16 @@ export default function showStillWatchingPrompt({ title, text, confirmText, canc
         });
     }
 
-    return dialogHelper.open(dlg).then(() => {
+    // The auto-advance play() that triggered this pre-play intercept left the
+    // global loading spinner active; it would otherwise keep spinning over the
+    // prompt. Hide it while the prompt is up, and restore it on Continue so the
+    // next episode still shows a buffering indicator.
+    const closed = dialogHelper.open(dlg);
+    loading.hide();
+
+    return closed.then(() => {
         if (dialogResult === 'ok') {
+            loading.show();
             return Promise.resolve();
         }
         return Promise.reject(new Error('Still Watching prompt dismissed'));

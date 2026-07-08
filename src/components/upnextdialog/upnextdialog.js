@@ -29,7 +29,8 @@ function getHtml() {
     html += '<div class="flex flex-direction-row upNextDialog-buttons" style="margin-top:1em;">';
 
     html += '<button type="button" is="emby-button" class="raised raised-mini btnStartNow upNextDialog-button">';
-    html += globalize.translate('HeaderStartNow');
+    html += '<span class="material-icons upNextDialog-buttonIcon play_arrow" aria-hidden="true"></span>';
+    html += '<span class="btnStartNow-text"></span>';
     html += '</button>';
 
     html += '<button type="button" is="emby-button" class="raised raised-mini btnHide upNextDialog-button">';
@@ -88,6 +89,11 @@ function fillItem(item) {
     }
 
     elem.querySelector('.upNextDialog-title').innerText = title || '';
+
+    const startTextEl = elem.querySelector('.btnStartNow-text');
+    if (startTextEl) {
+        startTextEl.textContent = globalize.translate(item.Type === 'Episode' ? 'HeaderNextEpisode' : 'HeaderNextVideo');
+    }
 
     instance.itemType = item.Type;
 

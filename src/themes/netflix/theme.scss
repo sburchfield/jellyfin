@@ -68,6 +68,14 @@ html {
         margin-top: 0;
     }
 
+    /* netflixfin: the full-width two-row strip leaves the inline-block tab
+       buttons packed to the start. Upstream got centering "for free" from its
+       width:auto shrink-wrap; re-centre them explicitly here (they are
+       inline-block, so text-align on the slider does it). */
+    .headerTabs .emby-tabs-slider {
+        text-align: center;
+    }
+
     .libraryPage:not(.noSecondaryNavPage) {
         padding-top: 7.5em !important;
     }
@@ -247,6 +255,88 @@ html {
     color: #3fa7c4;
 }
 
+/* netflixfin: give the "Up next" card a premium Netflix look — a rounded,
+   blurred panel with a solid white primary "Next Episode" button (play icon)
+   and a muted secondary Hide button, while keeping the countdown + metadata. */
+.upNextContainer {
+    width: 26em;
+    padding: 1.25em 1.35em;
+    border-radius: 0.5em;
+    background: linear-gradient(180deg, rgba(20, 20, 20, 0.72) 0%, rgba(20, 20, 20, 0.94) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 1.2em 2.8em rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.upNextDialog-nextVideoText {
+    font-size: 0.92em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.72);
+    text-transform: uppercase;
+}
+
+.upNextDialog-title {
+    font-size: 1.35em;
+    font-weight: 700;
+}
+
+.upNextDialog-buttons {
+    gap: 0.6em;
+    margin-top: 1.15em !important;
+}
+
+/* Primary: Netflix-style solid white pill with a play glyph. */
+.upNextDialog-button.btnStartNow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+    border-radius: 0.28em;
+    padding: 0.5em 1.25em 0.5em 0.9em;
+    transition: background var(--nf-dur-fast, 120ms) var(--nf-ease, ease),
+        box-shadow var(--nf-dur-fast, 120ms) var(--nf-ease, ease);
+}
+
+.upNextDialog-buttonIcon {
+    font-size: 1.4em;
+
+    [dir="ltr"] & {
+        margin-right: 0.25em;
+    }
+
+    [dir="rtl"] & {
+        margin-left: 0.25em;
+    }
+}
+
+.upNextDialog-button.btnStartNow:hover,
+.upNextDialog-button.btnStartNow.show-focus:focus {
+    background: #fff;
+    color: #000;
+    box-shadow: 0 0 0 0.16em #3fa7c4;
+}
+
+/* Secondary: muted translucent Hide button. */
+.upNextDialog-button.btnHide {
+    background: rgba(110, 110, 110, 0.55);
+    color: #fff;
+    border-radius: 0.28em;
+    padding: 0.5em 1.1em;
+    transition: background var(--nf-dur-fast, 120ms) var(--nf-ease, ease),
+        box-shadow var(--nf-dur-fast, 120ms) var(--nf-ease, ease);
+}
+
+.upNextDialog-button.btnHide:hover,
+.upNextDialog-button.btnHide.show-focus:focus {
+    background: rgba(110, 110, 110, 0.8);
+    color: #fff;
+    box-shadow: 0 0 0 0.16em #3fa7c4;
+}
+
 .alphaPickerButton {
     color: #999;
     color: rgba(255, 255, 255, 0.5);
@@ -407,6 +497,30 @@ html {
 
 .emby-tab-button:hover {
     color: #3fa7c4;
+}
+
+/* netflixfin: the selected/focused sub-tab was a solid blue box. On webOS the
+   browser ignores emby-tabs' `background:0 !important`, so the theme's
+   `.emby-button.show-focus:focus` fill paints through as a box. Neutralise the
+   fill and mark the active/focused tab with a slim teal underline instead. */
+.emby-tab-button.show-focus:focus,
+.emby-tab-button:focus,
+.emby-tab-button-active {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+.emby-tab-button-active::after,
+.emby-tab-button.show-focus:focus::after {
+    content: "";
+    position: absolute;
+    left: 1.5em;
+    right: 1.5em;
+    bottom: 0.65em;
+    height: 0.16em;
+    border-radius: 0.16em;
+    background: #3fa7c4;
+    box-shadow: 0 0 0.6em rgba(63, 167, 196, 0.55);
 }
 
 .channelPrograms,
