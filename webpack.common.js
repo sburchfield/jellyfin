@@ -38,6 +38,9 @@ const config = {
         ...THEMES_BY_ID
     },
     resolve: {
+        alias: {
+            'material-design-icons-iconfont$': path.resolve(__dirname, 'src/styles/material-icons-subset.scss')
+        },
         extensions: ['.tsx', '.ts', '.js'],
         modules: [
             path.resolve(__dirname, 'src'),

@@ -140,8 +140,8 @@ export function loadBillboard(view, apiClient, user) {
                 ${metaHtml}
                 ${overview}
                 <div class="billboardHero-buttons">
-                    <button type="button" class="billboardHero-btn billboardHero-play"><span class="material-icons" aria-hidden="true">play_arrow</span><span>Play</span></button>
-                    <button type="button" class="billboardHero-btn billboardHero-info"><span class="material-icons" aria-hidden="true">info</span><span>More Info</span></button>
+                    <button type="button" class="billboardHero-btn billboardHero-play"><span class="material-icons play_arrow" aria-hidden="true"></span><span>Play</span></button>
+                    <button type="button" class="billboardHero-btn billboardHero-info"><span class="material-icons info" aria-hidden="true"></span><span>More Info</span></button>
                 </div>
             </div>`;
 
