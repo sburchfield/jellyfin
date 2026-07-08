@@ -42,14 +42,27 @@ html {
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 10%, transparent 100%);
 }
 
-/* netflixfin: make the WebOS/TV header behave like the web client.
-   Upstream (librarybrowser.scss) pins the TV header to position:relative, which
-   puts it in normal flow so it pushes the hero down by the header height and
-   cuts it off (and the header scrolls away, re-rendering oddly). Library pages
-   already reserve padding-top for a floating header, and home has none so the
-   hero bleeds up behind the transparent gradient — exactly the web behaviour. */
+/* netflixfin: webOS needs the nav visible over the first viewport, but not
+   sticky while browsing. Absolute keeps the transparent-on-load overlay without
+   taking permanent screen real estate. */
 .layout-tv .skinHeader {
-    position: fixed;
+    position: absolute;
+}
+
+.layout-tv .homePage.libraryPage.homeHasBillboard {
+    padding-top: 0 !important;
+}
+
+/* netflixfin: webOS reports a TV layout but can land below the desktop-width
+   breakpoint, where upstream constrains the secondary tabs to 55% width. Keep
+   Movies/Suggestions/Favorites/etc. centered across the actual header width. */
+.layout-tv .headerTabs.sectionTabs {
+    align-self: stretch;
+    width: 100%;
+}
+
+.layout-tv .headerTabs .emby-tabs-slider {
+    text-align: center;
 }
 
 /* netflixfin: keep the section sub-tabs as a clean second row on every layout.
@@ -508,19 +521,27 @@ html {
 .emby-tab-button-active {
     background: transparent !important;
     background-color: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.sectionTabs .emby-tab-button {
+    margin: 0 0.25em;
+    padding: 0.72em 0.8em 0.9em;
+    overflow: visible;
 }
 
 .emby-tab-button-active::after,
 .emby-tab-button.show-focus:focus::after {
     content: "";
     position: absolute;
-    left: 1.5em;
-    right: 1.5em;
-    bottom: 0.65em;
-    height: 0.16em;
-    border-radius: 0.16em;
+    left: 0.65em;
+    right: 0.65em;
+    bottom: 0.42em;
+    height: 0.14em;
+    border-radius: 0.14em;
     background: #3fa7c4;
-    box-shadow: 0 0 0.6em rgba(63, 167, 196, 0.55);
+    box-shadow: 0 0 0.42em rgba(63, 167, 196, 0.5);
 }
 
 .channelPrograms,
@@ -922,7 +943,7 @@ html {
 .headerNavLinks {
     display: flex;
     align-items: center;
-    gap: 1.6em;
+    gap: 1.35em;
     /* Center horizontally across the header regardless of logo/right-button widths */
     position: absolute;
     left: 50%;
@@ -933,33 +954,68 @@ html {
 }
 
 .headerNavLink {
+    position: relative;
     color: #e5e5e5;
     font-size: 1.05em;
     font-weight: 500;
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;
-    padding: 0.35em 0;
+    margin: 0;
+    padding: 0.2em 0 0.42em;
+    border-radius: 0;
+    overflow: visible;
+    background: transparent !important;
     opacity: 0.82;
     transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.headerNavLink::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0.13em;
+    border-radius: 0.13em;
+    background: #3fa7c4;
+    box-shadow: 0 0 0.42em rgba(63, 167, 196, 0.5);
+    opacity: 0;
+    transform: scaleX(0.35);
+    transition:
+        opacity var(--nf-dur-fast, 120ms) var(--nf-ease, ease),
+        transform var(--nf-dur-fast, 120ms) var(--nf-ease, ease);
 }
 
 .headerNavLink:hover {
     color: #fff;
     opacity: 1;
+    text-decoration: none;
 }
 
 /* Remote/keyboard focus on TV — understated underline rather than a glow */
+.headerNavLink.show-focus:focus,
 .headerNavLink:focus {
     color: #fff;
     opacity: 1;
     outline: none;
-    box-shadow: inset 0 -2px 0 0 #3fa7c4;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
 }
 
 .headerNavLink.headerNavLink-active {
     color: #fff;
     font-weight: 700;
+    opacity: 1;
+}
+
+.headerNavLink:hover::after,
+.headerNavLink.show-focus:focus::after,
+.headerNavLink:focus::after,
+.headerNavLink.headerNavLink-active::after {
+    opacity: 1;
+    transform: scaleX(1);
 }
 
 /* On phones the drawer stays primary; hide the inline links to avoid crowding */

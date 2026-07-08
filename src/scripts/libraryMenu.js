@@ -522,6 +522,7 @@ function updateTopNavLinks(views) {
 
     nav.innerHTML = html;
     nav.classList.remove('hide');
+    updateTopNavActiveState(viewManager.currentView());
 }
 
 function getTopParentId() {
@@ -600,6 +601,28 @@ function updateLibraryNavLinks(page) {
             lnkMediaFolder.classList.add('navMenuOption-selected');
         } else {
             lnkMediaFolder.classList.remove('navMenuOption-selected');
+        }
+    }
+
+    updateTopNavActiveState(page);
+}
+
+function updateTopNavActiveState(page) {
+    if (!page) return;
+
+    const topParentId = getTopParentId();
+    const isHomePage = page.classList.contains('homePage');
+    const links = document.querySelectorAll('.headerNavLink');
+
+    for (const link of links) {
+        const itemId = link.getAttribute('data-itemid');
+        const isActive = isHomePage ? !itemId : !!topParentId && itemId === topParentId;
+
+        link.classList.toggle('headerNavLink-active', isActive);
+        if (isActive) {
+            link.setAttribute('aria-current', 'page');
+        } else {
+            link.removeAttribute('aria-current');
         }
     }
 }

@@ -10,27 +10,39 @@ import { getPortraitShape } from 'utils/card';
 import { appendCardRow } from './cardRow';
 import type { SectionOptions } from './section';
 
-function getCategoryTitle(category: RecommendationDto): string {
-    const name = category.BaselineItemName;
-    switch (category.RecommendationType) {
-        case 'SimilarToRecentlyPlayed':
-        case 'SimilarToLikedItem':
-            return name ? 'Because you watched ' + name : 'Because you watched';
-        case 'HasDirectorFromRecentlyPlayed':
-        case 'HasLikedDirector':
-            return name ? 'Directed by ' + name : 'From directors you like';
-        case 'HasActorFromRecentlyPlayed':
-        case 'HasLikedActor':
-            return name ? 'Starring ' + name : 'With actors you like';
-        default:
-            return 'Recommended for you';
-    }
+const MAX_ROW_ITEMS = 20;
+
+function isBecauseYouWatchedCategory(category: RecommendationDto): boolean {
+    return category.RecommendationType === 'SimilarToRecentlyPlayed'
+        || category.RecommendationType === 'SimilarToLikedItem';
 }
 
-/* Jellyfin's native movie recommendation engine ("Because you watched X", director/
- * actor based picks). It only covers movie libraries — series have no native recs,
- * so they are surfaced through the genre rows instead. Fails closed: if there is no
- * movie library or the call errors, no rows are added. */
+function getItemDedupeKey(item: BaseItemDto): string {
+    return item.Id || `${item.Name || ''}-${item.ProductionYear || ''}`;
+}
+
+function getUniqueRecommendationItems(categories: RecommendationDto[]): BaseItemDto[] {
+    const items: BaseItemDto[] = [];
+    const seen = new Set<string>();
+
+    for (const category of categories) {
+        for (const item of category.Items || []) {
+            const key = getItemDedupeKey(item);
+            if (!key || seen.has(key)) continue;
+
+            seen.add(key);
+            items.push(item);
+            if (items.length >= MAX_ROW_ITEMS) return items;
+        }
+    }
+
+    return items;
+}
+
+/* Jellyfin's native movie recommendation engine can return several near-identical
+ * "Because you watched X" buckets. Home only needs one high-signal row, so we merge
+ * the watched/liked buckets first, dedupe them, and fall back to the broader buckets
+ * only if the server did not return watched-based recommendations. */
 export async function loadRecommendations(
     elem: HTMLElement,
     apiClient: ApiClient,
@@ -50,32 +62,33 @@ export async function loadRecommendations(
             Fields: 'PrimaryImageAspectRatio',
             ImageTypeLimit: 1,
             CategoryLimit: 6,
-            ItemLimit: 20
+            ItemLimit: 8
         });
     } catch {
         return;
     }
 
-    for (const category of categories || []) {
-        const items = category.Items || [];
-        if (!items.length) continue;
-        appendCardRow(elem, {
-            title: getCategoryTitle(category),
-            fetchData: function () {
-                return Promise.resolve(items);
-            },
-            getItemsHtml: function (rowItems: BaseItemDto[]) {
-                return cardBuilder.getCardsHtml({
-                    items: rowItems,
-                    shape: getPortraitShape(options.enableOverflow),
-                    context: 'home',
-                    showTitle: true,
-                    showYear: true,
-                    centerText: true,
-                    overlayPlayButton: true,
-                    lines: 2
-                });
-            }
-        }, options);
-    }
+    const watchedCategories = (categories || []).filter(isBecauseYouWatchedCategory);
+    const sourceCategories = watchedCategories.length ? watchedCategories : categories || [];
+    const items = getUniqueRecommendationItems(sourceCategories);
+    if (!items.length) return;
+
+    appendCardRow(elem, {
+        title: 'Because you watched',
+        fetchData: function () {
+            return Promise.resolve(items);
+        },
+        getItemsHtml: function (rowItems: BaseItemDto[]) {
+            return cardBuilder.getCardsHtml({
+                items: rowItems,
+                shape: getPortraitShape(options.enableOverflow),
+                context: 'home',
+                showTitle: true,
+                showYear: true,
+                centerText: true,
+                overlayPlayButton: true,
+                lines: 2
+            });
+        }
+    }, options);
 }
