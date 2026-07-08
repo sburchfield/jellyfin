@@ -147,6 +147,8 @@
     "build:analyze": "cross-env NODE_ENV=\"production\" webpack --config webpack.analyze.js",
     "build:development": "webpack --config webpack.dev.js",
     "build:production": "cross-env NODE_ENV=\"production\" webpack --config webpack.prod.js",
+    "postbuild:production": "node scripts/check-bundle-budget.mjs",
+    "budget:bundle": "node scripts/check-bundle-budget.mjs",
     "build:check": "tsc --noEmit",
     "build:es-check": "npm run build:production && npm run escheck",
     "escheck": "es-check",
