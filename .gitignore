@@ -12,6 +12,7 @@ config.json
 # ide
 .idea
 .vs
+.DS_Store
 
 # vim
 *.sw?
