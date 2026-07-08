@@ -1,8 +1,3 @@
-import Alert from '@mui/material/Alert/Alert';
-import AlertTitle from '@mui/material/AlertTitle/AlertTitle';
-import Box from '@mui/material/Box/Box';
-import Paper from '@mui/material/Paper/Paper';
-import Typography from '@mui/material/Typography/Typography';
 import classNames from 'classnames';
 import React, { type FC, useEffect } from 'react';
 import { useRouteError } from 'react-router-dom';
@@ -28,38 +23,21 @@ const ErrorBoundary: FC<ErrorBoundaryParams> = ({
             id='errorBoundary'
             className={classNames('mainAnimatedPage', pageClasses)}
         >
-            <Box className='content-primary'>
-                <Alert severity='error'>
-                    <AlertTitle>
-                        {error.name}
-                    </AlertTitle>
+            <div className='content-primary'>
+                <section className='paperList' role='alert'>
+                    <div className='listItemBody padded-left padded-right'>
+                        <h2>{error.name}</h2>
 
-                    <Typography>
-                        {error.message}
-                    </Typography>
+                        <p>{error.message}</p>
 
-                    {error.stack && (
-                        <Paper
-                            variant='outlined'
-                            sx={{
-                                marginTop: 1,
-                                backgroundColor: 'transparent'
-                            }}
-                        >
-                            <Box
-                                component='pre'
-                                sx={{
-                                    overflow: 'auto',
-                                    margin: 2,
-                                    maxHeight: '25rem' // 20 lines
-                                }}
-                            >
+                        {error.stack && (
+                            <pre className='fieldDescription' style={{ maxHeight: '25rem', overflow: 'auto' }}>
                                 {error.stack}
-                            </Box>
-                        </Paper>
-                    )}
-                </Alert>
-            </Box>
+                            </pre>
+                        )}
+                    </div>
+                </section>
+            </div>
         </Page>
     );
 };

@@ -6,10 +6,10 @@ import { toAsyncPageRoute } from 'components/router/AsyncRoute';
 import { toViewManagerPageRoute } from 'components/router/LegacyRoute';
 import ErrorBoundary from 'components/router/ErrorBoundary';
 import FallbackRoute from 'components/router/FallbackRoute';
+import { AppType } from 'constants/appType';
 
 import { ASYNC_USER_ROUTES } from './asyncRoutes';
 import { LEGACY_PUBLIC_ROUTES, LEGACY_USER_ROUTES } from './legacyRoutes';
-import VideoPage from './video';
 
 export const EXPERIMENTAL_APP_ROUTES: RouteObject[] = [
     {
@@ -26,10 +26,7 @@ export const EXPERIMENTAL_APP_ROUTES: RouteObject[] = [
                     ...LEGACY_USER_ROUTES.map(toViewManagerPageRoute),
 
                     // The video page is special since it combines new controls with the legacy view
-                    {
-                        path: 'video',
-                        Component: VideoPage
-                    }
+                    toAsyncPageRoute({ path: 'video', type: AppType.Experimental })
                 ],
                 ErrorBoundary
             },

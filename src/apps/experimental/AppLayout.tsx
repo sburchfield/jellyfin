@@ -8,6 +8,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import AppBody from 'components/AppBody';
 import CustomCss from 'components/CustomCss';
 import ElevationScroll from 'components/ElevationScroll';
+import MuiThemeProvider from 'components/MuiThemeProvider';
 import ThemeCss from 'components/ThemeCss';
 import { useApi } from 'hooks/useApi';
 
@@ -30,7 +31,7 @@ export const Component = () => {
     }, [ isDrawerActive, setIsDrawerActive ]);
 
     return (
-        <>
+        <MuiThemeProvider>
             <Box sx={{ position: 'relative', display: 'flex', height: '100%' }}>
                 <StrictMode>
                     <ElevationScroll elevate={false}>
@@ -74,6 +75,6 @@ export const Component = () => {
             </Box>
             <ThemeCss />
             <CustomCss />
-        </>
+        </MuiThemeProvider>
     );
 };
