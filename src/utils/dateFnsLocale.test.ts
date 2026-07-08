@@ -3,56 +3,28 @@ import * as dateFnsLocale from './dateFnsLocale';
 
 describe('Utils: dateFnsLocale', () => {
     describe('Function: getLocale', () => {
-        it('Should return "en-US" by default', () => {
-            const { code } = dateFnsLocale.getLocale();
-            expect(code).toEqual('en-US');
+        it('Should let date-fns use its built-in en-US locale by default', () => {
+            expect(dateFnsLocale.getLocale()).toBeUndefined();
         });
     });
 
     describe('Function: getLocaleWithSuffix', () => {
-        it('Should return "en-US" by default with addSuffix to true', () => {
+        it('Should include addSuffix without forcing a locale object', () => {
             const { addSuffix, locale } = dateFnsLocale.getLocaleWithSuffix();
 
             expect(addSuffix).toEqual(true);
-            expect(locale.code).toEqual('en-US');
+            expect(locale).toBeUndefined();
         });
     });
 
     describe('Function: updateLocale', () => {
-        it('Should import "fr-ca" locale', async () => {
-            const expectedCode = 'fr-CA';
-
+        it('Should keep using the built-in en-US locale for requested locales', async () => {
             await dateFnsLocale.updateLocale('fr-ca');
-            const { code } = dateFnsLocale.getLocale();
             const { locale: localeWithSuffix } =
                 dateFnsLocale.getLocaleWithSuffix();
 
-            expect(code).toEqual(expectedCode);
-            expect(localeWithSuffix.code).toEqual(expectedCode);
-        });
-
-        it('Should import "fr" locale', async () => {
-            const expectedCode = 'fr';
-
-            await dateFnsLocale.updateLocale('fr-fr');
-            const { code } = dateFnsLocale.getLocale();
-            const { locale: localeWithSuffix } =
-                dateFnsLocale.getLocaleWithSuffix();
-
-            expect(code).toEqual(expectedCode);
-            expect(localeWithSuffix.code).toEqual(expectedCode);
-        });
-
-        it('Should import "en-US" locale if given locale is not found', async () => {
-            const expectedCode = 'en-US';
-
-            await dateFnsLocale.updateLocale('unknown-unknown');
-            const { code } = dateFnsLocale.getLocale();
-            const { locale: localeWithSuffix } =
-                dateFnsLocale.getLocaleWithSuffix();
-
-            expect(code).toEqual(expectedCode);
-            expect(localeWithSuffix.code).toEqual(expectedCode);
+            expect(dateFnsLocale.getLocale()).toBeUndefined();
+            expect(localeWithSuffix).toBeUndefined();
         });
     });
 });
