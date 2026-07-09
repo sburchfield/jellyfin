@@ -21,12 +21,16 @@ const UserAvatar: FC<UserAvatarProps> = ({ user }) => {
                     undefined
             }
             // eslint-disable-next-line react/jsx-no-bind
-            sx={(theme) => ({
-                bgcolor: api && user.Id && user.PrimaryImageTag ?
-                    theme.vars.palette.background.paper :
-                    theme.vars.palette.primary.dark,
-                color: 'inherit'
-            })}
+            sx={(theme) => {
+                const palette = theme.vars?.palette || theme.palette;
+
+                return {
+                    bgcolor: api && user.Id && user.PrimaryImageTag ?
+                        palette.background.paper :
+                        palette.primary.dark,
+                    color: 'inherit'
+                };
+            }}
         />
     ) : null;
 };

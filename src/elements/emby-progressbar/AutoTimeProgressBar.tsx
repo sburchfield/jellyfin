@@ -67,14 +67,18 @@ const AutoTimeProgressBar: FC<AutoTimeProgressBarProps> = ({
             variant='determinate'
             value={progress}
             // eslint-disable-next-line react/jsx-no-bind
-            sx={(theme) => ({
-                [`& .${linearProgressClasses.bar}`]: {
-                    borderRadius: 5,
-                    backgroundColor: isRecording ?
-                        theme.vars.palette.error.main :
-                        theme.vars.palette.primary.main
-                }
-            })}
+            sx={(theme) => {
+                const palette = theme.vars?.palette || theme.palette;
+
+                return {
+                    [`& .${linearProgressClasses.bar}`]: {
+                        borderRadius: 5,
+                        backgroundColor: isRecording ?
+                            palette.error.main :
+                            palette.primary.main
+                    }
+                };
+            }}
         />
     );
 };

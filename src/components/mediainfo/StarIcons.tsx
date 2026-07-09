@@ -21,9 +21,13 @@ const StarIcons: FC<StarIconsProps> = ({ className, communityRating }) => {
             <StarIcon
                 fontSize={'small'}
                 // eslint-disable-next-line react/jsx-no-bind
-                sx={(theme) => ({
-                    color: theme.vars.palette.starIcon.main
-                })}
+                sx={(theme) => {
+                    const palette = theme.vars?.palette || theme.palette;
+
+                    return {
+                        color: palette.starIcon?.main || '#f2b01e'
+                    };
+                }}
             />
             {communityRating.toFixed(1)}
         </Box>
