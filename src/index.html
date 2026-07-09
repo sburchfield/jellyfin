@@ -83,7 +83,140 @@
         [dir="rtl"] .mainDrawerHandle {
             left: 0;
         }
+
+        .bootError {
+            position: fixed;
+            z-index: 99999;
+            right: 4vw;
+            bottom: 4vw;
+            left: 4vw;
+            max-height: 70vh;
+            overflow: auto;
+            border: 2px solid #00a4dc;
+            background: #101010;
+            color: #fff;
+            padding: 1.2rem;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1rem;
+            line-height: 1.4;
+            box-shadow: 0 0 24px rgba(0, 164, 220, 0.6);
+        }
+
+        .bootErrorTitle {
+            margin-bottom: 0.7rem;
+            color: #00e5ff;
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .bootErrorDetails {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
     </style>
+    <script>
+        (function () {
+            var bootCompleted = false;
+            var bootErrorShown = false;
+
+            function toText(value) {
+                if (value === undefined || value === null) {
+                    return '';
+                }
+
+                if (value && value.stack) {
+                    return String(value.stack);
+                }
+
+                if (value && value.message) {
+                    return String(value.message);
+                }
+
+                return String(value);
+            }
+
+            function appendWhenReady(node) {
+                if (document.body) {
+                    document.body.appendChild(node);
+                    return;
+                }
+
+                window.addEventListener('DOMContentLoaded', function () {
+                    document.body.appendChild(node);
+                });
+            }
+
+            function showBootError(title, details) {
+                if (bootCompleted || bootErrorShown) {
+                    return;
+                }
+
+                bootErrorShown = true;
+
+                var panel = document.createElement('div');
+                panel.className = 'bootError';
+                panel.setAttribute('role', 'alert');
+
+                var titleNode = document.createElement('div');
+                titleNode.className = 'bootErrorTitle';
+                titleNode.appendChild(document.createTextNode(title));
+
+                var detailsNode = document.createElement('div');
+                detailsNode.className = 'bootErrorDetails';
+                detailsNode.appendChild(document.createTextNode(details));
+
+                panel.appendChild(titleNode);
+                panel.appendChild(detailsNode);
+                appendWhenReady(panel);
+            }
+
+            window.__jellyfinBootCompleted = function () {
+                bootCompleted = true;
+            };
+
+            window.onerror = function (message, source, lineno, colno, error) {
+                showBootError('Jellyfin boot error', [
+                    toText(message),
+                    source ? 'Source: ' + source : '',
+                    lineno ? 'Line: ' + lineno + (colno ? ':' + colno : '') : '',
+                    error ? toText(error) : '',
+                    'User agent: ' + navigator.userAgent
+                ].join('\n'));
+            };
+
+            window.onunhandledrejection = function (event) {
+                showBootError('Jellyfin boot promise rejection', [
+                    toText(event && event.reason),
+                    'User agent: ' + navigator.userAgent
+                ].join('\n'));
+            };
+
+            window.addEventListener('error', function (event) {
+                var target = event.target || event.srcElement;
+                var failedAsset = target && target !== window && (target.src || target.href);
+
+                if (failedAsset) {
+                    showBootError('Jellyfin boot asset failed', [
+                        failedAsset,
+                        'User agent: ' + navigator.userAgent
+                    ].join('\n'));
+                }
+            }, true);
+
+            window.setTimeout(function () {
+                var root = document.getElementById('reactRoot');
+                var splash = root && root.querySelector('.splashLogo');
+
+                if (!bootCompleted && splash) {
+                    showBootError('Jellyfin boot stalled', [
+                        'The startup splash was still visible after 15 seconds.',
+                        'This usually means an older cached page is missing a script, or the TV web runtime rejected a startup script.',
+                        'User agent: ' + navigator.userAgent
+                    ].join('\n'));
+                }
+            }, 15000);
+        }());
+    </script>
 </head>
 <body dir="ltr">
     <div id="reactRoot">

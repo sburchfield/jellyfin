@@ -214,6 +214,10 @@ async function renderApp() {
     root.render(
         <RootApp />
     );
+
+    if (window.__jellyfinBootCompleted) {
+        window.__jellyfinBootCompleted();
+    }
 }
 
 init();

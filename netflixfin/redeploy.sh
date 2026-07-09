@@ -86,6 +86,10 @@ if [[ "$needs_push" -eq 1 ]]; then
 fi
 
 echo "Deploying to ${WEB_ROOT} ..."
-rsync -a --delete dist/ "$WEB_ROOT/"
+# Keep old hashed bundles/chunks around for TV webviews that retain an older
+# index.html longer than normal browsers. The current index/config still get
+# overwritten, but stale asset requests keep resolving instead of hanging at
+# the startup splash.
+rsync -a dist/ "$WEB_ROOT/"
 
 echo "Done. Hard-refresh the browser (Cmd/Ctrl+Shift+R) or relaunch the TV app."
