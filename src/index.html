@@ -116,6 +116,10 @@
     </style>
     <script>
         (function () {
+            if (typeof globalThis === 'undefined') {
+                window.globalThis = window;
+            }
+
             var bootCompleted = false;
             var bootErrorShown = false;
 
