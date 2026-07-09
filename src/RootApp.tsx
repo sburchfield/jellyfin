@@ -9,11 +9,9 @@ import { queryClient } from 'utils/query/queryClient';
 
 import RootAppRouter from 'RootAppRouter';
 
-const ReactQueryDevtools = React.lazy(async () => {
-    const { ReactQueryDevtools: Devtools } = await import('@tanstack/react-query-devtools');
-
-    return { default: Devtools };
-});
+const ReactQueryDevtools = React.lazy(() => (
+    import('@tanstack/react-query-devtools').then(({ ReactQueryDevtools: Devtools }) => ({ default: Devtools }))
+));
 
 const useReactQueryDevtools = window.Proxy // '@tanstack/query-devtools' requires 'Proxy', which cannot be polyfilled for legacy browsers
     && !browser.tv; // Don't use devtools on the TV as the navigation is weird
