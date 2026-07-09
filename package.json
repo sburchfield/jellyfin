@@ -138,7 +138,7 @@
   "browserslist": [
     "last 2 Chrome versions",
     "last 2 Firefox versions",
-    "Chrome >= 79"
+    "Chrome >= 38"
   ],
   "scripts": {
     "start": "npm run serve",
