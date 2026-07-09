@@ -120,8 +120,29 @@
                 window.globalThis = window;
             }
 
+            if (window.location
+                && window.location.protocol !== 'https:'
+                && window.location.hostname !== 'localhost'
+                && window.location.hostname !== '127.0.0.1'
+                && window.location.hostname !== '::1'
+                && window.location.hostname !== '[::1]') {
+                try {
+                    window.caches = undefined;
+                } catch (_err) {
+                    try {
+                        Object.defineProperty(window, 'caches', {
+                            configurable: true,
+                            value: undefined
+                        });
+                    } catch (_ignored) {
+                        // Some old TV engines expose CacheStorage but reject it on HTTP.
+                    }
+                }
+            }
+
             var bootCompleted = false;
             var bootErrorShown = false;
+            var bootErrorPanel = null;
 
             function toText(value) {
                 if (value === undefined || value === null) {
@@ -139,6 +160,20 @@
                 return String(value);
             }
 
+            function isIgnorableBootError(text) {
+                return text.indexOf('CacheStorage') !== -1
+                    && text.indexOf('secure origins') !== -1;
+            }
+
+            function removeBootError() {
+                if (bootErrorPanel && bootErrorPanel.parentNode) {
+                    bootErrorPanel.parentNode.removeChild(bootErrorPanel);
+                }
+
+                bootErrorPanel = null;
+                bootErrorShown = false;
+            }
+
             function appendWhenReady(node) {
                 if (document.body) {
                     document.body.appendChild(node);
@@ -151,7 +186,7 @@
             }
 
             function showBootError(title, details) {
-                if (bootCompleted || bootErrorShown) {
+                if (bootCompleted || bootErrorShown || isIgnorableBootError(title + '\n' + details)) {
                     return;
                 }
 
@@ -171,11 +206,13 @@
 
                 panel.appendChild(titleNode);
                 panel.appendChild(detailsNode);
+                bootErrorPanel = panel;
                 appendWhenReady(panel);
             }
 
             window.__jellyfinBootCompleted = function () {
                 bootCompleted = true;
+                removeBootError();
             };
 
             window.onerror = function (message, source, lineno, colno, error) {
