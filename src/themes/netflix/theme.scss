@@ -49,6 +49,13 @@ html {
     position: absolute;
 }
 
+/* Keep the primary navigation inside the TV-safe area. Some webOS models
+   report a viewport below the wide-screen breakpoint, so they otherwise keep
+   the upstream zero horizontal padding and sit flush against the bezel. */
+.layout-tv .headerTop {
+    padding: 0.8em 1.5em;
+}
+
 .layout-tv .homePage.libraryPage.homeHasBillboard {
     padding-top: 0 !important;
 }
@@ -296,8 +303,26 @@ html {
 }
 
 .upNextDialog-buttons {
-    gap: 0.6em;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-end;
     margin-top: 1.15em !important;
+}
+
+.upNextDialog-button {
+    min-height: 2.5em;
+    justify-content: center;
+    margin: 0;
+}
+
+.upNextDialog-button + .upNextDialog-button {
+    [dir="ltr"] & {
+        margin-left: 0.65em;
+    }
+
+    [dir="rtl"] & {
+        margin-right: 0.65em;
+    }
 }
 
 /* Primary: Netflix-style solid white pill with a play glyph. */
@@ -331,6 +356,7 @@ html {
     background: #fff;
     color: #000;
     box-shadow: 0 0 0 0.16em #3fa7c4;
+    transform: none;
 }
 
 /* Secondary: muted translucent Hide button. */
@@ -348,6 +374,7 @@ html {
     background: rgba(110, 110, 110, 0.8);
     color: #fff;
     box-shadow: 0 0 0 0.16em #3fa7c4;
+    transform: none;
 }
 
 .alphaPickerButton {
@@ -993,27 +1020,20 @@ html {
     text-decoration: none;
 }
 
-/* Remote/keyboard focus on TV — understated underline rather than a glow */
+/* Combine all navigation emphasis on the keyboard/remote focus target. */
 .headerNavLink.show-focus:focus,
 .headerNavLink:focus {
     color: #fff;
     opacity: 1;
-    outline: none;
-    background: transparent !important;
+    outline: 0.12em solid rgba(255, 255, 255, 0.75);
+    outline-offset: 0.22em;
+    background: rgba(255, 255, 255, 0.08) !important;
     box-shadow: none !important;
     transform: none !important;
 }
 
-.headerNavLink.headerNavLink-active {
-    color: #fff;
-    font-weight: 700;
-    opacity: 1;
-}
-
-.headerNavLink:hover::after,
 .headerNavLink.show-focus:focus::after,
-.headerNavLink:focus::after,
-.headerNavLink.headerNavLink-active::after {
+.headerNavLink:focus::after {
     opacity: 1;
     transform: scaleX(1);
 }
