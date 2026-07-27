@@ -325,6 +325,7 @@ function reloadPlayButtons(page, item) {
 
     // "Shuffle Block" button only makes sense on a collection.
     hideAll(page, 'btnShuffleBlock', item.Type === 'BoxSet');
+    hideAll(page, 'btnSeriesEpisodes', item.Type === 'Series' && layoutManager.tv);
 
     if (item.Type == 'Program') {
         const now = new Date();
@@ -553,6 +554,7 @@ function reloadFromItem(instance, page, params, item, user) {
     const apiClient = ServerConnections.getApiClient(item.ServerId);
 
     libraryMenu.setTitle('');
+    page.classList.toggle('seriesDetailPage', item.Type === 'Series');
 
     // Start rendering the artwork first
     renderImage(page, item, apiClient);
@@ -693,6 +695,10 @@ function renderLogo(page, item, apiClient) {
     const detailLogo = page.querySelector('.detailLogo');
 
     const url = logoImageUrl(item, apiClient, {});
+    page.classList.toggle(
+        'seriesDetailPage-hasLogo',
+        item.Type === 'Series' && Boolean(url)
+    );
 
     if (url) {
         detailLogo.classList.remove('hide');
@@ -1373,6 +1379,150 @@ function getSeriesEpisodeBrowserDefaultSeason(seasons, nextUpEpisode, preferredS
         || seasons[0];
 }
 
+function getSeriesEpisodeBrowserEpisodeCode(episode) {
+    const parts = [];
+
+    if (episode.ParentIndexNumber != null) {
+        parts.push(`S${episode.ParentIndexNumber}`);
+    }
+
+    if (episode.IndexNumber != null) {
+        parts.push(`E${episode.IndexNumber}`);
+    }
+
+    return parts.join(':');
+}
+
+function getSeriesEpisodeBrowserSeasonCount(season) {
+    return season.RecursiveItemCount ?? season.ChildCount;
+}
+
+function getSeriesEpisodeBrowserSeasonCountLabel(season) {
+    const episodeCount = getSeriesEpisodeBrowserSeasonCount(season);
+
+    if (episodeCount == null) {
+        return '';
+    }
+
+    return episodeCount === 1 ?
+        globalize.translate('ValueOneEpisode') :
+        globalize.translate('ValueEpisodeCount', episodeCount);
+}
+
+function renderSeriesTvSpotlight(page, nextUpEpisode) {
+    const spotlight = page.querySelector('.seriesTvSpotlight');
+
+    if (!layoutManager.tv || !nextUpEpisode) {
+        spotlight.classList.add('hide');
+        return;
+    }
+
+    const episodeCode = getSeriesEpisodeBrowserEpisodeCode(nextUpEpisode);
+    spotlight.querySelector('.seriesTvSpotlight-label').innerText = [
+        globalize.translate('NextUp'),
+        episodeCode
+    ].filter(Boolean).join(' · ');
+    spotlight.querySelector('.seriesTvSpotlight-title').innerText = nextUpEpisode.Name || '';
+    spotlight.querySelector('.seriesTvSpotlight-overview').innerText = nextUpEpisode.Overview || '';
+    spotlight.classList.remove('hide');
+
+    if (episodeCode) {
+        for (const playButton of page.querySelectorAll('.btnPlay')) {
+            playButton.title = `${globalize.translate('Play')} ${episodeCode}`;
+        }
+    }
+}
+
+function setSeriesEpisodeBrowserSelectedSeason(section, item, season) {
+    section.dataset.selectedSeasonId = season.Id;
+
+    for (const button of section.querySelectorAll('.seriesEpisodeBrowser-seasonButton')) {
+        const isSelected = button.dataset.seasonid === season.Id;
+        button.classList.toggle('seriesEpisodeBrowser-seasonButton-selected', isSelected);
+        button.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    }
+
+    section.querySelector('.seriesEpisodeBrowser-tvSeasonTitle').innerText = season.Name || '';
+    section.querySelector('.seriesEpisodeBrowser-tvRating').innerText = item.OfficialRating || '';
+}
+
+function renderSeriesEpisodeBrowserTvHeader(section, item, apiClient, seasons) {
+    const tvHeader = section.querySelector('.seriesEpisodeBrowser-tvHeader');
+    const seasonRail = section.querySelector('.seriesEpisodeBrowser-seasonRail');
+
+    if (!layoutManager.tv) {
+        tvHeader.classList.add('hide');
+        seasonRail.classList.add('hide');
+        return;
+    }
+
+    const logo = tvHeader.querySelector('.seriesEpisodeBrowser-tvLogo');
+    const title = tvHeader.querySelector('.seriesEpisodeBrowser-tvTitle');
+    const logoUrl = logoImageUrl(item, apiClient, {
+        maxWidth: 500
+    });
+
+    if (logoUrl) {
+        logo.style.backgroundImage = `url(${JSON.stringify(logoUrl)})`;
+        logo.classList.remove('hide');
+        title.classList.add('hide');
+    } else {
+        logo.style.backgroundImage = '';
+        logo.classList.add('hide');
+        title.innerText = item.Name || '';
+        title.classList.remove('hide');
+    }
+
+    const regularSeasonCount = seasons.filter(season => season.IndexNumber !== 0).length;
+    const seriesMeta = [
+        item.ProductionYear,
+        regularSeasonCount ?
+            `${regularSeasonCount} ${globalize.translate('HeaderSeasons')}` :
+            ''
+    ].filter(Boolean).join(' · ');
+
+    tvHeader.querySelector('.seriesEpisodeBrowser-tvMeta').innerText = seriesMeta;
+    tvHeader.classList.remove('hide');
+    seasonRail.classList.remove('hide');
+}
+
+function renderSeriesEpisodeBrowserSeasonRail(section, seasons, selectedSeason, onSelect) {
+    const seasonRail = section.querySelector('.seriesEpisodeBrowser-seasonRail');
+
+    if (!layoutManager.tv) {
+        seasonRail.innerHTML = '';
+        return;
+    }
+
+    seasonRail.innerHTML = seasons.map((season, index) => {
+        const seasonLabel = escapeHtml(getSeriesEpisodeBrowserSeasonLabel(season, index));
+        const countLabel = escapeHtml(getSeriesEpisodeBrowserSeasonCountLabel(season));
+        const selectedClass = season.Id === selectedSeason.Id ?
+            ' seriesEpisodeBrowser-seasonButton-selected' :
+            '';
+        const selectedValue = season.Id === selectedSeason.Id ? 'true' : 'false';
+
+        return `
+            <button
+                is="emby-button"
+                type="button"
+                id="series-season-${season.Id}"
+                class="seriesEpisodeBrowser-seasonButton${selectedClass}"
+                data-seasonid="${season.Id}"
+                role="tab"
+                aria-selected="${selectedValue}"
+            >
+                <span class="seriesEpisodeBrowser-seasonName">${seasonLabel}</span>
+                <span class="seriesEpisodeBrowser-seasonCount">${countLabel}</span>
+            </button>
+        `;
+    }).join('');
+
+    for (const button of seasonRail.querySelectorAll('.seriesEpisodeBrowser-seasonButton')) {
+        button.onclick = () => onSelect(button.dataset.seasonid);
+    }
+}
+
 function setSeriesEpisodeBrowserStatus(section, message) {
     const status = section.querySelector('.seriesEpisodeBrowser-status');
     status.innerText = message || '';
@@ -1431,7 +1581,7 @@ function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seas
 
         itemsContainer.innerHTML = listView.getListViewHtml({
             items: episodes,
-            showIndexNumber: true,
+            showIndexNumber: !layoutManager.tv,
             enableOverview: true,
             enablePlayedButton: !layoutManager.mobile,
             infoButton: !layoutManager.mobile,
@@ -1444,9 +1594,24 @@ function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seas
         });
         imageLoader.lazyChildren(itemsContainer);
 
-        for (const row of itemsContainer.querySelectorAll('.listItem')) {
+        const episodeRows = itemsContainer.querySelectorAll('.listItem');
+        for (let index = 0; index < episodeRows.length; index++) {
+            const row = episodeRows[index];
+            const episode = episodes[index];
             row.classList.add('seriesEpisodeBrowser-episode');
             row.querySelector('.listItemBodyText')?.classList.add('seriesEpisodeBrowser-title');
+
+            if (layoutManager.tv) {
+                const image = row.querySelector('.listItemImage');
+                const episodeCode = getSeriesEpisodeBrowserEpisodeCode(episode);
+
+                if (image && episodeCode) {
+                    const episodeIndex = document.createElement('div');
+                    episodeIndex.className = 'seriesEpisodeBrowser-episodeIndex';
+                    episodeIndex.innerText = episodeCode;
+                    image.appendChild(episodeIndex);
+                }
+            }
 
             if (row.getAttribute('data-id') === section.dataset.nextUpEpisodeId) {
                 row.classList.add('seriesEpisodeBrowser-episode-nextUp');
@@ -1523,7 +1688,7 @@ function renderSeriesEpisodeBrowser(page, item, options = {}) {
         SeriesId: item.Id,
         UserId: userId,
         Limit: 1,
-        Fields: 'MediaSourceCount'
+        Fields: 'MediaSourceCount,Overview,PrimaryImageAspectRatio'
     }).catch(() => ({ Items: [] }));
 
     return Promise.all([seasonsPromise, nextUpPromise]).then(([seasonsResult, nextUpResult]) => {
@@ -1553,28 +1718,49 @@ function renderSeriesEpisodeBrowser(page, item, options = {}) {
             `<option value="${season.Id}">${escapeHtml(getSeriesEpisodeBrowserSeasonLabel(season, index))}</option>`
         )).join('');
         seasonSelect.value = selectedSeason.Id;
-        section.dataset.selectedSeasonId = selectedSeason.Id;
         section.dataset.nextUpEpisodeId = nextUpEpisode?.Id || '';
+        renderSeriesTvSpotlight(page, nextUpEpisode);
+        renderSeriesEpisodeBrowserTvHeader(section, item, apiClient, seasons);
 
-        seasonSelect.onchange = () => {
-            section.dataset.focusedEpisodeId = '';
-            renderSeriesEpisodeBrowserSeason(
+        const selectSeason = (seasonId, seasonOptions = {}) => {
+            const season = seasons.find(currentSeason => currentSeason.Id === seasonId);
+
+            if (!season) {
+                return Promise.resolve();
+            }
+
+            if (!seasonOptions.restoreFocus) {
+                section.dataset.focusedEpisodeId = '';
+            }
+            seasonSelect.value = season.Id;
+            setSeriesEpisodeBrowserSelectedSeason(section, item, season);
+
+            return renderSeriesEpisodeBrowserSeason(
                 section,
                 item,
                 apiClient,
                 userId,
-                seasonSelect.value
+                season.Id,
+                seasonOptions
             );
         };
 
-        return renderSeriesEpisodeBrowserSeason(
+        renderSeriesEpisodeBrowserSeasonRail(
             section,
-            item,
-            apiClient,
-            userId,
-            selectedSeason.Id,
-            options
+            seasons,
+            selectedSeason,
+            seasonId => selectSeason(seasonId)
         );
+
+        seasonSelect.onchange = () => selectSeason(seasonSelect.value);
+        setSeriesEpisodeBrowserSelectedSeason(section, item, selectedSeason);
+
+        if (section.dataset.focusSeasonRequested === 'true') {
+            section.dataset.focusSeasonRequested = '';
+            section.querySelector('.seriesEpisodeBrowser-seasonButton-selected')?.focus();
+        }
+
+        return selectSeason(selectedSeason.Id, options);
     }).catch(error => {
         if (metadataRequestToken !== section._episodeBrowserMetadataRequestToken) {
             return;
@@ -1595,10 +1781,15 @@ function resetSeriesEpisodeBrowser(page) {
     section.dataset.renderedSeasonId = '';
     section.dataset.nextUpEpisodeId = '';
     section.dataset.focusedEpisodeId = '';
+    section.dataset.focusSeasonRequested = '';
     section.onfocusin = null;
     section.classList.remove('seriesEpisodeBrowser');
     section.querySelector('.seriesEpisodeBrowser-header').classList.add('hide');
+    section.querySelector('.seriesEpisodeBrowser-tvHeader').classList.add('hide');
+    section.querySelector('.seriesEpisodeBrowser-seasonRail').classList.add('hide');
+    section.querySelector('.seriesEpisodeBrowser-seasonRail').innerHTML = '';
     section.querySelector('.seriesEpisodeBrowser-status').classList.add('hide');
+    page.querySelector('.seriesTvSpotlight').classList.add('hide');
     const itemsContainer = section.querySelector('.itemsContainer');
     itemsContainer.classList.remove('seriesEpisodeBrowser-items');
     itemsContainer.removeAttribute('aria-busy');
@@ -2258,6 +2449,18 @@ export default function (view, params) {
         playCurrentItem(actionElem, action);
     }
 
+    function onSeriesEpisodesClick() {
+        const section = view.querySelector('#childrenCollapsible');
+        section.dataset.focusSeasonRequested = 'true';
+        section.scrollIntoView(true);
+
+        const selectedSeason = section.querySelector('.seriesEpisodeBrowser-seasonButton-selected');
+        if (selectedSeason) {
+            section.dataset.focusSeasonRequested = '';
+            selectedSeason.focus();
+        }
+    }
+
     function onInstantMixClick() {
         playbackManager.instantMix(currentItem);
     }
@@ -2362,6 +2565,7 @@ export default function (view, params) {
 
         bindAll(view, '.btnPlay', 'click', onPlayClick);
         bindAll(view, '.btnReplay', 'click', onPlayClick);
+        bindAll(view, '.btnSeriesEpisodes', 'click', onSeriesEpisodesClick);
         bindAll(view, '.btnInstantMix', 'click', onInstantMixClick);
         bindAll(view, '.btnShuffle', 'click', onShuffleClick);
         bindAll(view, '.btnShuffleBlock', 'click', onShuffleBlockClick);

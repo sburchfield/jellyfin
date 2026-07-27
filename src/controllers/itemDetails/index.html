@@ -13,6 +13,11 @@
                     <div class="nameContainer"></div>
                     <div class="itemMiscInfo itemMiscInfo-primary" style="margin-bottom: 0.6em;"></div>
                     <div class="itemMiscInfo itemMiscInfo-secondary" style="margin-bottom: 0.6em;"></div>
+                    <div class="seriesTvSpotlight hide">
+                        <div class="seriesTvSpotlight-label"></div>
+                        <h2 class="seriesTvSpotlight-title"></h2>
+                        <p class="seriesTvSpotlight-overview"></p>
+                    </div>
                 </div>
 
                 <div class="mainDetailButtons focuscontainer-x">
@@ -25,6 +30,13 @@
                     <button is="emby-button" type="button" class="button-flat btnReplay hide detailButton" title="${Play}" data-action="play">
                         <div class="detailButton-content">
                             <span class="material-icons detailButton-icon replay" aria-hidden="true"></span>
+                        </div>
+                    </button>
+
+                    <button is="emby-button" type="button" class="button-flat btnSeriesEpisodes hide detailButton" title="${AllEpisodes}">
+                        <div class="detailButton-content">
+                            <span class="material-icons detailButton-icon video_library" aria-hidden="true"></span>
+                            <span class="detailButton-label">${AllEpisodes}</span>
                         </div>
                     </button>
 
@@ -185,24 +197,40 @@
         <div class="detailPageSecondaryContainer padded-bottom-page">
             <div class="detailPageContent">
                 <div id="childrenCollapsible" class="hide verticalSection detailVerticalSection">
-                    <div class="seriesEpisodeBrowser-header hide">
-                        <h2 class="sectionTitle sectionTitle-cards">${Episodes}</h2>
-                        <div class="seriesEpisodeBrowser-seasonSelector selectContainer">
-                            <select
-                                is="emby-select"
-                                class="seriesEpisodeBrowser-seasonSelect"
-                                label=""
-                                aria-label="${HeaderSeasons}"
-                            ></select>
+                    <div class="seriesEpisodeBrowser-tvHeader hide">
+                        <div class="seriesEpisodeBrowser-tvIdentity">
+                            <div class="seriesEpisodeBrowser-tvLogo"></div>
+                            <h2 class="seriesEpisodeBrowser-tvTitle"></h2>
+                            <div class="seriesEpisodeBrowser-tvMeta"></div>
+                        </div>
+                        <div class="seriesEpisodeBrowser-tvSeasonMeta">
+                            <h2 class="seriesEpisodeBrowser-tvSeasonTitle"></h2>
+                            <div class="seriesEpisodeBrowser-tvRating"></div>
                         </div>
                     </div>
-                    <h2 class="sectionTitle sectionTitle-cards hide">
-                        <span></span>
-                    </h2>
-                    <div>
-                        <div is="emby-itemscontainer" class="itemsContainer padded-right" style="text-align: left;"></div>
+                    <div class="seriesEpisodeBrowser-layout">
+                        <div class="seriesEpisodeBrowser-seasonRail hide" role="tablist" aria-label="${HeaderSeasons}"></div>
+                        <div class="seriesEpisodeBrowser-episodePane" role="tabpanel">
+                            <div class="seriesEpisodeBrowser-header hide">
+                                <h2 class="sectionTitle sectionTitle-cards">${Episodes}</h2>
+                                <div class="seriesEpisodeBrowser-seasonSelector selectContainer">
+                                    <select
+                                        is="emby-select"
+                                        class="seriesEpisodeBrowser-seasonSelect"
+                                        label=""
+                                        aria-label="${HeaderSeasons}"
+                                    ></select>
+                                </div>
+                            </div>
+                            <h2 class="sectionTitle sectionTitle-cards hide">
+                                <span></span>
+                            </h2>
+                            <div>
+                                <div is="emby-itemscontainer" class="itemsContainer padded-right" style="text-align: left;"></div>
+                            </div>
+                            <div class="seriesEpisodeBrowser-status hide" role="status" aria-live="polite"></div>
+                        </div>
                     </div>
-                    <div class="seriesEpisodeBrowser-status hide" role="status" aria-live="polite"></div>
                 </div>
 
                 <div id="additionalPartsCollapsible" class="verticalSection detailVerticalSection hide">
