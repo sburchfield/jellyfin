@@ -489,6 +489,7 @@ html {
 .itemDetailPage .detailButton.btnReplay {
     min-width: auto;
     flex-direction: row;
+    flex-shrink: 0;
     padding: 0.72em 1.35em !important;
     border-color: #fff;
     border-radius: 0.3em;
@@ -519,6 +520,18 @@ html {
 .itemDetailPage .detailButton.btnReplay:focus {
     background: rgba(255, 255, 255, 0.88);
     color: #000;
+}
+
+/* The wider playback pill inherits Jellyfin's 1.2x remote-focus scale. Reserve
+   its expanded footprint on TV so it never covers the adjacent action. */
+.layout-tv[dir="ltr"] .itemDetailPage .detailButton.btnPlay,
+.layout-tv[dir="ltr"] .itemDetailPage .detailButton.btnReplay {
+    margin-right: 1.4em !important;
+}
+
+.layout-tv[dir="rtl"] .itemDetailPage .detailButton.btnPlay,
+.layout-tv[dir="rtl"] .itemDetailPage .detailButton.btnReplay {
+    margin-left: 1.4em !important;
 }
 
 .itemDetailPage .itemGenres {
