@@ -45,6 +45,7 @@ import 'elements/emby-scroller/emby-scroller';
 import 'elements/emby-select/emby-select';
 
 import 'styles/scrollstyles.scss';
+import './seriesEpisodeBrowser.scss';
 
 /** Item types that use a list view for their children. */
 const LIST_VIEW_TYPES = [
@@ -781,40 +782,6 @@ function setPeopleHeader(page, item) {
     }
 }
 
-function renderNextUp(page, item, user) {
-    const section = page.querySelector('.nextUpSection');
-
-    if (item.Type != 'Series') {
-        section.classList.add('hide');
-        return;
-    }
-
-    ServerConnections.getApiClient(item.ServerId).getNextUpEpisodes({
-        SeriesId: item.Id,
-        UserId: user.Id,
-        Fields: 'MediaSourceCount'
-    }).then(function (result) {
-        if (result.Items.length) {
-            section.classList.remove('hide');
-        } else {
-            section.classList.add('hide');
-        }
-
-        const html = cardBuilder.getCardsHtml({
-            items: result.Items,
-            shape: 'overflowBackdrop',
-            showTitle: true,
-            displayAsSpecial: item.Type == 'Season' && item.IndexNumber,
-            overlayText: false,
-            centerText: true,
-            overlayPlayButton: true
-        });
-        const itemsContainer = section.querySelector('.nextUpItems');
-        itemsContainer.innerHTML = html;
-        imageLoader.lazyChildren(itemsContainer);
-    });
-}
-
 function setInitialCollapsibleState(page, item, apiClient, context, user) {
     page.querySelector('.collectionItems').innerHTML = '';
 
@@ -840,10 +807,8 @@ function setInitialCollapsibleState(page, item, apiClient, context, user) {
 
     if (item.Type == 'Series') {
         renderSeriesSchedule(page, item);
-        renderNextUp(page, item, user);
-    } else {
-        page.querySelector('.nextUpSection').classList.add('hide');
     }
+    page.querySelector('.nextUpSection').classList.add('hide');
 
     renderScenes(page, item);
 
@@ -1357,7 +1322,297 @@ function renderTags(page, item) {
     }
 }
 
+function getSeriesEpisodeBrowserLoadingHtml() {
+    let html = '';
+
+    for (let i = 0; i < 3; i++) {
+        html += `
+            <div class="seriesEpisodeBrowser-skeleton" aria-hidden="true">
+                <div class="seriesEpisodeBrowser-skeletonImage"></div>
+                <div class="seriesEpisodeBrowser-skeletonText">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+function getSeriesEpisodeBrowserSeasonLabel(season, index) {
+    if (season.Name) {
+        return season.Name;
+    }
+
+    const seasonNumber = season.IndexNumber == null ? index + 1 : season.IndexNumber;
+    return `${globalize.translate('Season')} ${seasonNumber}`;
+}
+
+function getSeriesEpisodeBrowserDefaultSeason(seasons, nextUpEpisode, preferredSeasonId) {
+    const preferredSeason = seasons.find(season => season.Id === preferredSeasonId);
+    if (preferredSeason) {
+        return preferredSeason;
+    }
+
+    const nextUpSeason = nextUpEpisode ?
+        seasons.find(season => season.Id === nextUpEpisode.SeasonId) :
+        null;
+    if (nextUpSeason) {
+        return nextUpSeason;
+    }
+
+    const firstUnplayedSeason = seasons.find(season => (
+        season.IndexNumber !== 0
+        && season.UserData?.UnplayedItemCount > 0
+    ));
+
+    return firstUnplayedSeason
+        || seasons.find(season => season.IndexNumber !== 0)
+        || seasons[0];
+}
+
+function setSeriesEpisodeBrowserStatus(section, message) {
+    const status = section.querySelector('.seriesEpisodeBrowser-status');
+    status.innerText = message || '';
+    status.classList.toggle('hide', !message);
+}
+
+function restoreSeriesEpisodeBrowserFocus(section) {
+    if (!layoutManager.tv || !section.dataset.focusedEpisodeId) {
+        return;
+    }
+
+    const episodeRows = section.querySelectorAll('.seriesEpisodeBrowser-episode');
+    for (const row of episodeRows) {
+        if (row.getAttribute('data-id') === section.dataset.focusedEpisodeId) {
+            row.focus();
+            return;
+        }
+    }
+}
+
+function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seasonId, options = {}) {
+    const itemsContainer = section.querySelector('.itemsContainer');
+    const requestToken = (section._episodeBrowserRequestToken || 0) + 1;
+    section._episodeBrowserRequestToken = requestToken;
+    section.dataset.selectedSeasonId = seasonId;
+
+    setSeriesEpisodeBrowserStatus(section, '');
+    itemsContainer.setAttribute('aria-busy', 'true');
+
+    if (section.dataset.renderedSeasonId !== seasonId) {
+        itemsContainer.innerHTML = getSeriesEpisodeBrowserLoadingHtml();
+    }
+
+    return apiClient.getEpisodes(item.Id, {
+        seasonId,
+        userId,
+        Fields: 'Overview,PrimaryImageAspectRatio,MediaSourceCount,PremiereDate'
+    }).then(result => {
+        if (
+            requestToken !== section._episodeBrowserRequestToken
+            || section.dataset.seriesId !== item.Id
+        ) {
+            return;
+        }
+
+        const episodes = result.Items || [];
+        section.dataset.renderedSeasonId = seasonId;
+        itemsContainer.removeAttribute('aria-busy');
+        itemsContainer.setAttribute('data-parentid', seasonId);
+
+        if (!episodes.length) {
+            itemsContainer.innerHTML = '';
+            setSeriesEpisodeBrowserStatus(section, globalize.translate('MessageNoItemsAvailable'));
+            return;
+        }
+
+        itemsContainer.innerHTML = listView.getListViewHtml({
+            items: episodes,
+            showIndexNumber: true,
+            enableOverview: true,
+            enablePlayedButton: !layoutManager.mobile,
+            infoButton: !layoutManager.mobile,
+            imageSize: 'large',
+            enableSideMediaInfo: false,
+            highlight: false,
+            action: 'play',
+            imagePlayButton: true,
+            includeParentInfoInTitle: false
+        });
+        imageLoader.lazyChildren(itemsContainer);
+
+        for (const row of itemsContainer.querySelectorAll('.listItem')) {
+            row.classList.add('seriesEpisodeBrowser-episode');
+            row.querySelector('.listItemBodyText')?.classList.add('seriesEpisodeBrowser-title');
+
+            if (row.getAttribute('data-id') === section.dataset.nextUpEpisodeId) {
+                row.classList.add('seriesEpisodeBrowser-episode-nextUp');
+                const body = row.querySelector('.listItemBody');
+
+                if (body) {
+                    const badge = document.createElement('div');
+                    badge.className = 'seriesEpisodeBrowser-nextUpBadge';
+                    badge.innerText = globalize.translate('NextUp');
+                    body.insertBefore(badge, body.firstChild);
+                }
+            }
+        }
+
+        if (options.restoreFocus) {
+            restoreSeriesEpisodeBrowserFocus(section);
+        }
+    }).catch(error => {
+        if (requestToken !== section._episodeBrowserRequestToken) {
+            return;
+        }
+
+        console.error('[seriesEpisodeBrowser] failed to load episodes', error);
+        itemsContainer.removeAttribute('aria-busy');
+        itemsContainer.innerHTML = '';
+        setSeriesEpisodeBrowserStatus(section, globalize.translate('MessageNoItemsAvailable'));
+    });
+}
+
+function renderSeriesEpisodeBrowser(page, item, options = {}) {
+    const section = page.querySelector('#childrenCollapsible');
+    const itemsContainer = section.querySelector('.itemsContainer');
+    const header = section.querySelector('.seriesEpisodeBrowser-header');
+    const seasonSelect = section.querySelector('.seriesEpisodeBrowser-seasonSelect');
+    const apiClient = ServerConnections.getApiClient(item.ServerId);
+    const userId = apiClient.getCurrentUserId();
+    const isSameSeries = section.dataset.seriesId === item.Id;
+    const metadataRequestToken = (section._episodeBrowserMetadataRequestToken || 0) + 1;
+    section._episodeBrowserMetadataRequestToken = metadataRequestToken;
+    const preferredSeasonId = isSameSeries ?
+        section.dataset.selectedSeasonId || seasonSelect.value :
+        null;
+
+    if (!isSameSeries) {
+        section._episodeBrowserRequestToken = 0;
+        section.dataset.focusedEpisodeId = '';
+        section.dataset.nextUpEpisodeId = '';
+        section.dataset.renderedSeasonId = '';
+        seasonSelect.innerHTML = '';
+        itemsContainer.innerHTML = getSeriesEpisodeBrowserLoadingHtml();
+    }
+
+    section.dataset.seriesId = item.Id;
+    section.classList.add('seriesEpisodeBrowser');
+    section.classList.remove('hide');
+    header.classList.remove('hide');
+    section.querySelector('.sectionTitle > span').parentElement.classList.add('hide');
+    itemsContainer.classList.add('seriesEpisodeBrowser-items', 'vertical-list');
+    itemsContainer.classList.remove('scrollX', 'hiddenScrollX', 'smoothScrollX', 'vertical-wrap');
+    setSeriesEpisodeBrowserStatus(section, '');
+
+    section.onfocusin = event => {
+        const row = event.target.closest('.seriesEpisodeBrowser-episode');
+        if (row) {
+            section.dataset.focusedEpisodeId = row.getAttribute('data-id');
+        }
+    };
+
+    const seasonsPromise = apiClient.getSeasons(item.Id, {
+        userId,
+        Fields: 'ItemCounts'
+    });
+    const nextUpPromise = apiClient.getNextUpEpisodes({
+        SeriesId: item.Id,
+        UserId: userId,
+        Limit: 1,
+        Fields: 'MediaSourceCount'
+    }).catch(() => ({ Items: [] }));
+
+    return Promise.all([seasonsPromise, nextUpPromise]).then(([seasonsResult, nextUpResult]) => {
+        if (
+            metadataRequestToken !== section._episodeBrowserMetadataRequestToken
+            || section.dataset.seriesId !== item.Id
+        ) {
+            return;
+        }
+
+        const seasons = seasonsResult.Items || [];
+        const nextUpEpisode = nextUpResult.Items?.[0];
+        const selectedSeason = getSeriesEpisodeBrowserDefaultSeason(
+            seasons,
+            nextUpEpisode,
+            preferredSeasonId
+        );
+
+        if (!selectedSeason) {
+            seasonSelect.innerHTML = '';
+            itemsContainer.innerHTML = '';
+            setSeriesEpisodeBrowserStatus(section, globalize.translate('MessageNoItemsAvailable'));
+            return;
+        }
+
+        seasonSelect.innerHTML = seasons.map((season, index) => (
+            `<option value="${season.Id}">${escapeHtml(getSeriesEpisodeBrowserSeasonLabel(season, index))}</option>`
+        )).join('');
+        seasonSelect.value = selectedSeason.Id;
+        section.dataset.selectedSeasonId = selectedSeason.Id;
+        section.dataset.nextUpEpisodeId = nextUpEpisode?.Id || '';
+
+        seasonSelect.onchange = () => {
+            section.dataset.focusedEpisodeId = '';
+            renderSeriesEpisodeBrowserSeason(
+                section,
+                item,
+                apiClient,
+                userId,
+                seasonSelect.value
+            );
+        };
+
+        return renderSeriesEpisodeBrowserSeason(
+            section,
+            item,
+            apiClient,
+            userId,
+            selectedSeason.Id,
+            options
+        );
+    }).catch(error => {
+        if (metadataRequestToken !== section._episodeBrowserMetadataRequestToken) {
+            return;
+        }
+
+        console.error('[seriesEpisodeBrowser] failed to load seasons', error);
+        itemsContainer.innerHTML = '';
+        setSeriesEpisodeBrowserStatus(section, globalize.translate('MessageNoItemsAvailable'));
+    });
+}
+
+function resetSeriesEpisodeBrowser(page) {
+    const section = page.querySelector('#childrenCollapsible');
+    section._episodeBrowserMetadataRequestToken = (section._episodeBrowserMetadataRequestToken || 0) + 1;
+    section._episodeBrowserRequestToken = (section._episodeBrowserRequestToken || 0) + 1;
+    section.dataset.seriesId = '';
+    section.dataset.selectedSeasonId = '';
+    section.dataset.renderedSeasonId = '';
+    section.dataset.nextUpEpisodeId = '';
+    section.dataset.focusedEpisodeId = '';
+    section.onfocusin = null;
+    section.classList.remove('seriesEpisodeBrowser');
+    section.querySelector('.seriesEpisodeBrowser-header').classList.add('hide');
+    section.querySelector('.seriesEpisodeBrowser-status').classList.add('hide');
+    const itemsContainer = section.querySelector('.itemsContainer');
+    itemsContainer.classList.remove('seriesEpisodeBrowser-items');
+    itemsContainer.removeAttribute('aria-busy');
+}
+
 function renderChildren(page, item) {
+    if (item.Type === 'Series') {
+        page.querySelector('#listChildrenCollapsible').classList.add('hide');
+        renderSeriesEpisodeBrowser(page, item);
+        return;
+    }
+
+    resetSeriesEpisodeBrowser(page);
+
     const childrenCollapsible = page.querySelector(LIST_VIEW_TYPES.includes(item.Type) ? '#listChildrenCollapsible' : '#childrenCollapsible');
     const childrenItemsContainer = childrenCollapsible.querySelector('.itemsContainer');
 
@@ -2135,6 +2390,12 @@ export default function (view, params) {
                     libraryMenu.setTitle('');
                     renderTrackSelections(page, self, currentItem, true);
                     renderBackdrop(page, currentItem);
+
+                    if (currentItem.Type === 'Series') {
+                        renderSeriesEpisodeBrowser(page, currentItem, {
+                            restoreFocus: true
+                        });
+                    }
                 }
             } else {
                 reload(self, page, params);
@@ -2152,6 +2413,7 @@ export default function (view, params) {
             libraryMenu.setTransparentMenu(false);
         });
         view.addEventListener('viewdestroy', function () {
+            resetSeriesEpisodeBrowser(view);
             currentItem = null;
             self._currentPlaybackMediaSources = null;
             self.currentRecordingFields = null;

@@ -1,0 +1,295 @@
+.seriesEpisodeBrowser {
+    max-width: 84em;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.seriesEpisodeBrowser-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.1em;
+    box-sizing: border-box;
+}
+
+[dir="ltr"] .seriesEpisodeBrowser-header {
+    padding-right: 3.3%;
+}
+
+[dir="rtl"] .seriesEpisodeBrowser-header {
+    padding-left: 3.3%;
+}
+
+.seriesEpisodeBrowser-header .sectionTitle {
+    margin: 0;
+}
+
+.seriesEpisodeBrowser-seasonSelector {
+    width: 12em;
+    margin: 0;
+    flex-shrink: 0;
+
+    [dir="ltr"] & {
+        margin-left: 1.5em;
+    }
+
+    [dir="rtl"] & {
+        margin-right: 1.5em;
+    }
+}
+
+.seriesEpisodeBrowser-seasonSelect {
+    min-width: 100%;
+}
+
+.seriesEpisodeBrowser-items {
+    display: flex;
+    flex-direction: column;
+}
+
+.seriesEpisodeBrowser-episode {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 0 0.45em;
+    padding: 0.7em;
+    overflow: visible;
+    border: 0;
+    border-radius: 0.45em;
+    background: rgba(255, 255, 255, 0.025);
+    transition:
+        background-color 120ms ease,
+        box-shadow 120ms ease,
+        transform 120ms ease;
+}
+
+.seriesEpisodeBrowser-episode:hover {
+    background: rgba(255, 255, 255, 0.075);
+}
+
+.seriesEpisodeBrowser-episode:focus,
+.seriesEpisodeBrowser-episode:focus-within {
+    outline: none !important;
+    background: rgba(255, 255, 255, 0.105);
+    box-shadow:
+        0 0 0.85em 0.08em rgba(255, 255, 255, 0.18),
+        0 0.35em 1.1em rgba(0, 0, 0, 0.35);
+    transform: scale(1.012);
+}
+
+.seriesEpisodeBrowser-episode .listItemImage-large {
+    width: 15.5em;
+    height: 8.72em;
+    min-width: 15.5em;
+    min-height: 8.72em;
+    margin-right: 1.2em;
+    overflow: hidden;
+    border-radius: 0.35em;
+}
+
+[dir="rtl"] .seriesEpisodeBrowser-episode .listItemImage-large {
+    margin-right: 0;
+    margin-left: 1.2em;
+}
+
+.seriesEpisodeBrowser-episode .listItemBody {
+    align-self: stretch;
+    padding: 0.5em 0.35em;
+}
+
+.seriesEpisodeBrowser-episode .seriesEpisodeBrowser-title {
+    color: #fff;
+    font-size: 1.08em;
+    font-weight: 700;
+}
+
+.seriesEpisodeBrowser-episode .listItemMediaInfo {
+    margin: 0.3em 0 0;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.88em;
+}
+
+.seriesEpisodeBrowser-episode .listItem-overview {
+    display: -webkit-box;
+    margin-top: 0.55em;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9em;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.seriesEpisodeBrowser-episode .listItem-bottomoverview {
+    display: none;
+}
+
+.seriesEpisodeBrowser-episode .listViewUserDataButtons {
+    align-self: center;
+    margin-left: 0.7em;
+}
+
+[dir="rtl"] .seriesEpisodeBrowser-episode .listViewUserDataButtons {
+    margin-right: 0.7em;
+    margin-left: 0;
+}
+
+.seriesEpisodeBrowser-nextUpBadge {
+    align-self: flex-start;
+    margin-bottom: 0.35em;
+    color: #fff;
+    font-size: 0.68em;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.seriesEpisodeBrowser-nextUpBadge::before {
+    content: "";
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    margin-right: 0.45em;
+    border-radius: 50%;
+    background: #3fa7c4;
+    box-shadow: 0 0 0.55em rgba(63, 167, 196, 0.75);
+    vertical-align: 0.05em;
+}
+
+[dir="rtl"] .seriesEpisodeBrowser-nextUpBadge::before {
+    margin-right: 0;
+    margin-left: 0.45em;
+}
+
+.seriesEpisodeBrowser-status {
+    padding: 2.5em 0;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+}
+
+.seriesEpisodeBrowser-skeleton {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.45em;
+    padding: 0.7em;
+    border-radius: 0.45em;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.seriesEpisodeBrowser-skeletonImage {
+    width: 15.5em;
+    height: 8.72em;
+    flex-shrink: 0;
+    border-radius: 0.35em;
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.seriesEpisodeBrowser-skeletonText {
+    width: 50%;
+    margin-left: 1.2em;
+}
+
+.seriesEpisodeBrowser-skeletonText > div {
+    height: 0.72em;
+    margin-bottom: 0.65em;
+    border-radius: 0.3em;
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.seriesEpisodeBrowser-skeletonText > div:first-child {
+    width: 55%;
+}
+
+.seriesEpisodeBrowser-skeletonText > div:nth-child(2) {
+    width: 28%;
+}
+
+.seriesEpisodeBrowser-skeletonText > div:last-child {
+    width: 86%;
+}
+
+.layout-tv .seriesEpisodeBrowser {
+    max-width: none;
+}
+
+.layout-desktop[dir="ltr"] .seriesEpisodeBrowser,
+.layout-tv[dir="ltr"] .seriesEpisodeBrowser {
+    width: calc(100% + 29.15vw);
+    max-width: none;
+    margin-right: 0;
+    margin-left: -29.15vw;
+}
+
+.layout-desktop[dir="rtl"] .seriesEpisodeBrowser,
+.layout-tv[dir="rtl"] .seriesEpisodeBrowser {
+    width: calc(100% + 29.15vw);
+    max-width: none;
+    margin-right: -29.15vw;
+    margin-left: 0;
+}
+
+.layout-tv .seriesEpisodeBrowser-episode {
+    padding: 0.8em;
+}
+
+.layout-tv .seriesEpisodeBrowser-episode .listItemImage-large-tv {
+    width: 22em !important;
+    height: 12.38em !important;
+    min-width: 22em;
+    min-height: 12.38em;
+}
+
+.layout-tv .seriesEpisodeBrowser-episode .listItemBody {
+    padding: 0.7em 0.5em;
+}
+
+.layout-tv .seriesEpisodeBrowser-episode .seriesEpisodeBrowser-title {
+    font-size: 1.14em;
+}
+
+.layout-tv .seriesEpisodeBrowser-seasonSelector {
+    width: 13.5em;
+}
+
+@media all and (max-width: 50em) {
+    .seriesEpisodeBrowser-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .seriesEpisodeBrowser-seasonSelector {
+        width: 100%;
+        margin-top: 0.8em;
+        margin-left: 0;
+    }
+
+    [dir="rtl"] .seriesEpisodeBrowser-seasonSelector {
+        margin-right: 0;
+    }
+
+    .seriesEpisodeBrowser-episode {
+        padding: 0.45em;
+    }
+
+    .seriesEpisodeBrowser-episode .listItemImage-large {
+        width: 8.8em;
+        height: 4.95em;
+        min-width: 8.8em;
+        min-height: 4.95em;
+        margin-right: 0.75em;
+    }
+
+    .seriesEpisodeBrowser-episode .listItemBody {
+        padding: 0.25em 0;
+    }
+
+    .seriesEpisodeBrowser-episode .listItem-overview,
+    .seriesEpisodeBrowser-episode .listViewUserDataButtons {
+        display: none;
+    }
+
+    .seriesEpisodeBrowser-skeletonImage {
+        width: 8.8em;
+        height: 4.95em;
+    }
+}
