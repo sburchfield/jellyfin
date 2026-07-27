@@ -1583,8 +1583,8 @@ function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seas
             items: episodes,
             showIndexNumber: !layoutManager.tv,
             enableOverview: true,
-            enablePlayedButton: !layoutManager.mobile,
-            infoButton: !layoutManager.mobile,
+            enablePlayedButton: !layoutManager.mobile && !layoutManager.tv,
+            infoButton: !layoutManager.mobile && !layoutManager.tv,
             imageSize: 'large',
             enableSideMediaInfo: false,
             highlight: false,
@@ -1599,11 +1599,23 @@ function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seas
             const row = episodeRows[index];
             const episode = episodes[index];
             row.classList.add('seriesEpisodeBrowser-episode');
-            row.querySelector('.listItemBodyText')?.classList.add('seriesEpisodeBrowser-title');
+            const body = row.querySelector('.listItemBody');
+            const title = row.querySelector('.listItemBodyText');
+            title?.classList.add('seriesEpisodeBrowser-title');
 
             if (layoutManager.tv) {
                 const image = row.querySelector('.listItemImage');
                 const episodeCode = getSeriesEpisodeBrowserEpisodeCode(episode);
+
+                if (title) {
+                    title.innerText = episode.Name || title.innerText;
+                }
+
+                row.querySelector('.endsAt')?.remove();
+                row.setAttribute(
+                    'aria-label',
+                    [episodeCode, episode.Name].filter(Boolean).join(' · ')
+                );
 
                 if (image && episodeCode) {
                     const episodeIndex = document.createElement('div');
@@ -1611,11 +1623,17 @@ function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seas
                     episodeIndex.innerText = episodeCode;
                     image.appendChild(episodeIndex);
                 }
+
+                if (body && episode.Overview) {
+                    const overview = document.createElement('div');
+                    overview.className = 'listItem-overview seriesEpisodeBrowser-overview';
+                    overview.innerText = episode.Overview;
+                    body.appendChild(overview);
+                }
             }
 
             if (row.getAttribute('data-id') === section.dataset.nextUpEpisodeId) {
                 row.classList.add('seriesEpisodeBrowser-episode-nextUp');
-                const body = row.querySelector('.listItemBody');
 
                 if (body) {
                     const badge = document.createElement('div');

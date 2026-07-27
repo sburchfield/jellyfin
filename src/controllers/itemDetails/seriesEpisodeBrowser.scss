@@ -209,9 +209,13 @@
 }
 
 .layout-tv .seriesEpisodeBrowser {
-    min-height: calc(100vh - 5.5em);
-    padding-top: 0.5em;
+    box-sizing: border-box;
+    min-height: calc(100vh - 4.5em);
+    padding: 2.2em 4.5vw 4em;
     max-width: none;
+    background:
+        radial-gradient(circle at 72% 4%, rgba(255, 255, 255, 0.055), transparent 34em),
+        #141414;
 }
 
 .layout-desktop[dir="ltr"] .seriesEpisodeBrowser,
@@ -236,27 +240,34 @@
 
 .layout-tv .seriesEpisodeBrowser-tvHeader {
     display: grid;
-    grid-template-columns: 20em minmax(0, 1fr);
+    grid-template-areas:
+        "eyebrow eyebrow"
+        "identity season";
+    grid-template-columns: 18em minmax(0, 1fr);
     align-items: end;
-    gap: 3.2em;
+    gap: 0.65em 2.4em;
     box-sizing: border-box;
-    margin-bottom: 1.5em;
-    padding-right: 3.3%;
+    margin-bottom: 1.1em;
 }
 
-.layout-tv[dir="rtl"] .seriesEpisodeBrowser-tvHeader {
-    padding-right: 0;
-    padding-left: 3.3%;
+.layout-tv .seriesEpisodeBrowser-tvEyebrow {
+    grid-area: eyebrow;
+    margin-bottom: 0.15em;
+    color: #fff;
+    font-size: 1.65em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .layout-tv .seriesEpisodeBrowser-tvIdentity {
+    grid-area: identity;
     min-width: 0;
 }
 
 .layout-tv .seriesEpisodeBrowser-tvLogo {
-    width: 14em;
-    height: 5.5em;
-    margin-bottom: 0.6em;
+    width: 11em;
+    height: 3.8em;
+    margin-bottom: 0.35em;
     background-position: left center;
     background-repeat: no-repeat;
     background-size: contain;
@@ -270,22 +281,25 @@
 .layout-tv .seriesEpisodeBrowser-tvSeasonTitle {
     margin: 0;
     color: #fff;
-    font-size: 1.55em;
+    font-size: 1.35em;
     font-weight: 700;
     line-height: 1.15;
 }
 
 .layout-tv .seriesEpisodeBrowser-tvMeta,
 .layout-tv .seriesEpisodeBrowser-tvRating {
-    margin-top: 0.55em;
-    color: rgba(255, 255, 255, 0.68);
-    font-size: 0.92em;
+    margin-top: 0.45em;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.85em;
 }
 
 .layout-tv .seriesEpisodeBrowser-tvSeasonMeta {
     display: flex;
     align-items: baseline;
+    grid-area: season;
     min-width: 0;
+    padding-bottom: 0.55em;
+    border-bottom: 0.06em solid rgba(255, 255, 255, 0.14);
 }
 
 .layout-tv[dir="ltr"] .seriesEpisodeBrowser-tvRating {
@@ -298,9 +312,9 @@
 
 .layout-tv .seriesEpisodeBrowser-layout {
     display: grid;
-    grid-template-columns: 20em minmax(0, 1fr);
+    grid-template-columns: 18em minmax(0, 1fr);
     align-items: start;
-    gap: 3.2em;
+    gap: 2.4em;
 }
 
 .layout-tv .seriesEpisodeBrowser-seasonRail {
@@ -315,18 +329,19 @@
     justify-content: space-between;
     box-sizing: border-box;
     width: 100%;
-    min-height: 3.4em;
-    margin: 0 0 0.18em;
-    padding: 0.65em 1em;
-    border: 0;
-    border-radius: 0.35em;
+    min-height: 3.1em;
+    margin: 0 0 0.15em;
+    padding: 0.55em 0.9em;
+    border: 0.06em solid transparent;
+    border-radius: 0.45em;
     outline: none;
     background: transparent;
-    color: rgba(255, 255, 255, 0.78);
+    color: rgba(255, 255, 255, 0.74);
     font-family: inherit;
-    font-size: 1.05em;
+    font-size: 1.02em;
     text-align: left;
     transition:
+        border-color 120ms ease,
         background-color 120ms ease,
         color 120ms ease,
         box-shadow 120ms ease;
@@ -337,13 +352,15 @@
 }
 
 .layout-tv .seriesEpisodeBrowser-seasonButton-selected {
-    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.075);
     color: #fff;
 }
 
 .layout-tv .seriesEpisodeBrowser-seasonButton:focus {
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 0 0 0.1em rgba(255, 255, 255, 0.72);
+    border-color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 0 0.85em rgba(255, 255, 255, 0.12);
     color: #fff;
 }
 
@@ -356,8 +373,8 @@
 
 .layout-tv .seriesEpisodeBrowser-seasonCount {
     flex-shrink: 0;
-    color: rgba(255, 255, 255, 0.56);
-    font-size: 0.76em;
+    color: rgba(255, 255, 255, 0.52);
+    font-size: 0.74em;
 }
 
 .layout-tv[dir="ltr"] .seriesEpisodeBrowser-seasonCount {
@@ -374,33 +391,35 @@
 
 .layout-tv .seriesEpisodeBrowser-episode {
     align-items: flex-start;
-    min-height: 10.6em;
-    margin-bottom: 0.75em;
-    padding: 0.35em;
-    border-radius: 0;
-    background: transparent;
+    min-height: 9.45em;
+    margin-bottom: 0.5em;
+    padding: 0.45em;
+    border: 0.06em solid transparent;
+    border-radius: 0.55em;
+    background: rgba(255, 255, 255, 0.025);
 }
 
 .layout-tv .seriesEpisodeBrowser-episode:hover {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.065);
 }
 
 .layout-tv .seriesEpisodeBrowser-episode:focus,
 .layout-tv .seriesEpisodeBrowser-episode:focus-within {
     outline: none !important;
-    background: transparent;
-    box-shadow: none;
+    border-color: rgba(255, 255, 255, 0.44);
+    background: rgba(255, 255, 255, 0.105);
+    box-shadow: 0 0.55em 1.8em rgba(0, 0, 0, 0.34);
     transform: none;
 }
 
 .layout-tv .seriesEpisodeBrowser-episode .listItemImage-large-tv {
-    width: 18em !important;
-    height: 10.13em !important;
-    min-width: 18em;
-    min-height: 10.13em;
-    margin-right: 1em;
+    width: 15.5em !important;
+    height: 8.72em !important;
+    min-width: 15.5em;
+    min-height: 8.72em;
+    margin-right: 1.15em;
     overflow: hidden;
-    border-radius: 0.2em;
+    border-radius: 0.35em;
     transition:
         box-shadow 120ms ease,
         transform 120ms ease;
@@ -408,41 +427,53 @@
 
 .layout-tv[dir="rtl"] .seriesEpisodeBrowser-episode .listItemImage-large-tv {
     margin-right: 0;
-    margin-left: 1em;
+    margin-left: 1.15em;
 }
 
 .layout-tv .seriesEpisodeBrowser-episode:focus .listItemImage-large-tv {
     box-shadow:
-        0 0 0 0.16em #fff,
-        0 0 0.9em 0.12em rgba(255, 255, 255, 0.22);
-    transform: scale(1.018);
+        0 0 0 0.13em #fff,
+        0 0 0.8em 0.1em rgba(255, 255, 255, 0.2);
+    transform: scale(1.012);
 }
 
 .layout-tv .seriesEpisodeBrowser-episode .listItemBody {
-    padding: 0.2em 0.55em;
+    align-self: center;
+    padding: 0.3em 0.45em;
 }
 
 .layout-tv .seriesEpisodeBrowser-episode .seriesEpisodeBrowser-title {
     margin: 0;
-    font-size: 1.2em;
+    color: #fff;
+    font-size: 1.08em;
     line-height: 1.2;
 }
 
 .layout-tv .seriesEpisodeBrowser-episode .listItemMediaInfo {
-    margin-top: 0.45em;
-    font-size: 0.84em;
+    margin-top: 0.35em;
+    font-size: 0.8em;
 }
 
 .layout-tv .seriesEpisodeBrowser-episode .listItem-overview {
-    margin-top: 0.65em;
-    color: rgba(255, 255, 255, 0.74);
-    font-size: 0.9em;
-    line-height: 1.38;
+    margin-top: 0.5em;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.82em;
+    line-height: 1.4;
     -webkit-line-clamp: 3;
 }
 
+.layout-tv .seriesEpisodeBrowser-episode .listViewUserDataButtons,
+.layout-tv .seriesEpisodeBrowser-episode .listItemImageButton {
+    display: none;
+}
+
+.layout-tv .seriesEpisodeBrowser-episode-nextUp {
+    background: rgba(255, 255, 255, 0.055);
+}
+
 .layout-tv .seriesEpisodeBrowser-nextUpBadge {
-    margin-bottom: 0.45em;
+    margin-bottom: 0.35em;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .layout-tv .seriesEpisodeBrowser-episodeIndex {
@@ -465,34 +496,36 @@
 }
 
 .layout-tv .seriesEpisodeBrowser-skeleton {
-    min-height: 10.6em;
-    padding: 0.35em;
-    background: transparent;
+    min-height: 9.45em;
+    margin-bottom: 0.5em;
+    padding: 0.45em;
+    border-radius: 0.55em;
+    background: rgba(255, 255, 255, 0.025);
 }
 
 .layout-tv .seriesEpisodeBrowser-skeletonImage {
-    width: 18em;
-    height: 10.13em;
+    width: 15.5em;
+    height: 8.72em;
 }
 
 @media all and (min-width: 100em) {
     .layout-tv .seriesEpisodeBrowser-tvHeader,
     .layout-tv .seriesEpisodeBrowser-layout {
-        grid-template-columns: 22em minmax(0, 1fr);
-        gap: 4em;
+        grid-template-columns: 20em minmax(0, 1fr);
+        gap: 3em;
     }
 
     .layout-tv .seriesEpisodeBrowser-episode,
     .layout-tv .seriesEpisodeBrowser-skeleton {
-        min-height: 12.85em;
+        min-height: 10.65em;
     }
 
     .layout-tv .seriesEpisodeBrowser-episode .listItemImage-large-tv,
     .layout-tv .seriesEpisodeBrowser-skeletonImage {
-        width: 22em !important;
-        height: 12.38em !important;
-        min-width: 22em;
-        min-height: 12.38em;
+        width: 18em !important;
+        height: 10.13em !important;
+        min-width: 18em;
+        min-height: 10.13em;
     }
 }
 
