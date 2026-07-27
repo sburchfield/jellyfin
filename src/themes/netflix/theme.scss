@@ -53,7 +53,9 @@ html {
    report a viewport below the wide-screen breakpoint, so they otherwise keep
    the upstream zero horizontal padding and sit flush against the bezel. */
 .layout-tv .headerTop {
-    padding: 0.8em 1.5em;
+    box-sizing: border-box;
+    min-height: 4.5em;
+    padding: 1.1em 2.5em;
 }
 
 .layout-tv .homePage.libraryPage.homeHasBillboard {
@@ -408,6 +410,227 @@ html {
 .noBackdropTransparency .detailPagePrimaryContainer,
 .noBackdropTransparency .detailPageSecondaryContainer {
     background-color: #141414;
+}
+
+/* ----------------------------------------------------------------------
+   Cinematic movie / series details
+   Preserve Jellyfin's information and controls, but give the first viewport a
+   clearer hierarchy: artwork, title and metadata, primary playback, then quiet
+   supporting actions and description.
+   ---------------------------------------------------------------------- */
+
+.itemDetailPage .detailImageContainer .cardBox {
+    overflow: hidden;
+    border: 0.06em solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.55em;
+    box-shadow:
+        0 1.4em 3.6em rgba(0, 0, 0, 0.52),
+        0 0.2em 0.8em rgba(0, 0, 0, 0.7);
+}
+
+.itemDetailPage .itemDetailImage {
+    border-radius: 0.5em;
+}
+
+.itemDetailPage .nameContainer .itemName.parentNameLast,
+.itemDetailPage .nameContainer .parentName {
+    margin-bottom: 0.18em;
+    color: #fff;
+    font-size: 2.15em;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    text-shadow: 0 0.12em 0.5em rgba(0, 0, 0, 0.65);
+}
+
+.itemDetailPage .itemMiscInfo-primary {
+    color: rgba(255, 255, 255, 0.96);
+    font-weight: 600;
+}
+
+.itemDetailPage .itemMiscInfo-secondary {
+    color: rgba(255, 255, 255, 0.64);
+}
+
+.itemDetailPage .itemMiscInfo .mediaInfoItem {
+    margin-right: 0.75em;
+}
+
+.itemDetailPage .mainDetailButtons {
+    margin: 1.15em 0 1.35em;
+}
+
+.itemDetailPage .detailButton {
+    min-width: 3em;
+    min-height: 3em;
+    border: 0.06em solid rgba(255, 255, 255, 0.36);
+    border-radius: 50%;
+    background: rgba(42, 42, 42, 0.76);
+    color: #fff;
+
+    [dir="ltr"] & {
+        margin-right: 0.65em !important;
+    }
+
+    [dir="rtl"] & {
+        margin-left: 0.65em !important;
+    }
+}
+
+.itemDetailPage .detailButton:hover,
+.itemDetailPage .detailButton:focus {
+    outline: 0.12em solid rgba(255, 255, 255, 0.82);
+    outline-offset: 0.16em;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.itemDetailPage .detailButton.btnPlay,
+.itemDetailPage .detailButton.btnReplay {
+    min-width: auto;
+    flex-direction: row;
+    padding: 0.72em 1.35em !important;
+    border-color: #fff;
+    border-radius: 0.3em;
+    background: #fff;
+    color: #111;
+    font-weight: 700;
+}
+
+.itemDetailPage .detailButton.btnPlay::after,
+.itemDetailPage .detailButton.btnReplay::after {
+    content: attr(title);
+    font-size: 0.94em;
+    line-height: 1;
+    white-space: nowrap;
+
+    [dir="ltr"] & {
+        margin-left: 0.55em;
+    }
+
+    [dir="rtl"] & {
+        margin-right: 0.55em;
+    }
+}
+
+.itemDetailPage .detailButton.btnPlay:hover,
+.itemDetailPage .detailButton.btnPlay:focus,
+.itemDetailPage .detailButton.btnReplay:hover,
+.itemDetailPage .detailButton.btnReplay:focus {
+    background: rgba(255, 255, 255, 0.88);
+    color: #000;
+}
+
+.itemDetailPage .itemGenres {
+    margin: 0 0 0.65em;
+    color: rgba(255, 255, 255, 0.64);
+    font-size: 0.9em;
+}
+
+.itemDetailPage .tagline {
+    margin: 0 0 0.7em;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 1.05em;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+.itemDetailPage .overview {
+    max-width: 52em;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1.02em;
+    line-height: 1.52;
+    text-shadow: 0 0.08em 0.35em rgba(0, 0, 0, 0.7);
+}
+
+.itemDetailPage .itemDetailsGroup {
+    max-width: 52em;
+    margin-top: 1.35em;
+    padding-top: 1.05em;
+    border-top: 0.06em solid rgba(255, 255, 255, 0.14);
+}
+
+.itemDetailPage .detailsGroupItem .label {
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 0.76em;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.itemDetailPage .detailsGroupItem .content {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.layout-desktop .itemDetailPage .detailRibbon {
+    display: block;
+    box-sizing: border-box;
+    height: auto;
+    min-height: 9.2em;
+    margin-top: -9.2em;
+    padding-top: 0.8em;
+    padding-bottom: 0.7em;
+}
+
+.layout-tv .itemDetailPage .itemBackdrop {
+    display: block;
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 78vh;
+    background-attachment: initial;
+    background-position: center 18%;
+    pointer-events: none;
+}
+
+.layout-tv .itemDetailPage .itemBackdrop::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background:
+        linear-gradient(90deg, rgba(20, 20, 20, 0.98) 0%, rgba(20, 20, 20, 0.82) 25%, rgba(20, 20, 20, 0.24) 68%, rgba(20, 20, 20, 0.46) 100%),
+        linear-gradient(0deg, #141414 0%, rgba(20, 20, 20, 0.84) 14%, transparent 55%);
+}
+
+.layout-tv .itemDetailPage .detailPageWrapperContainer {
+    position: relative;
+    z-index: 1;
+    padding-top: 1.4em;
+}
+
+.layout-tv .itemDetailPage .detailPagePrimaryContainer {
+    min-height: calc(100vh - 5.5em);
+}
+
+.layout-tv .itemDetailPage .detailRibbon {
+    padding-top: 0.45em;
+}
+
+.layout-tv .itemDetailPage .detailPagePrimaryContent {
+    padding-top: 0.5em;
+}
+
+.layout-tv .itemDetailPage .detailPageSecondaryContainer {
+    position: relative;
+    background: #141414;
+    padding-top: 2.4em;
+}
+
+.layout-tv .itemDetailPage .nameContainer .itemName.parentNameLast,
+.layout-tv .itemDetailPage .nameContainer .parentName {
+    font-size: 2.35em;
+}
+
+.layout-tv .itemDetailPage .overview {
+    max-width: 46em;
+    font-size: 0.98em;
+    line-height: 1.5;
 }
 
 .listItem-border {
@@ -794,6 +1017,12 @@ html {
     color: #f2f2f2;
 }
 
+.itemDetailPage .detailVerticalSection > .sectionTitle {
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+}
+
 /* Tighter vertical rhythm between home rows (Netflix sits rows close). */
 .verticalSection {
     margin-bottom: 0.5em;
@@ -970,7 +1199,10 @@ html {
 .headerNavLinks {
     display: flex;
     align-items: center;
-    gap: 1.35em;
+    box-sizing: border-box;
+    max-width: calc(100% - 4em);
+    padding: 0.55em 1.15em;
+
     /* Center horizontally across the header regardless of logo/right-button widths */
     position: absolute;
     left: 50%;
@@ -1036,6 +1268,18 @@ html {
 .headerNavLink:focus::after {
     opacity: 1;
     transform: scaleX(1);
+}
+
+/* Flex gap is not supported by the Chromium versions used by older webOS
+   releases. Use sibling margins so the primary nav keeps its spacing there. */
+.headerNavLink + .headerNavLink {
+    [dir="ltr"] & {
+        margin-left: 1.35em;
+    }
+
+    [dir="rtl"] & {
+        margin-right: 1.35em;
+    }
 }
 
 /* On phones the drawer stays primary; hide the inline links to avoid crowding */

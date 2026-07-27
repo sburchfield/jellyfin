@@ -558,8 +558,10 @@ function reloadFromItem(instance, page, params, item, user) {
 
     renderLogo(page, item, apiClient);
 
-    // Render the mobile header backdrop
-    if (layoutManager.mobile) {
+    // Render the local hero backdrop on layouts where the details page owns the
+    // artwork treatment. The custom TV theme uses this instead of a flat black
+    // first viewport.
+    if (layoutManager.mobile || layoutManager.tv) {
         renderHeaderBackdrop(page, item, apiClient);
     }
 
