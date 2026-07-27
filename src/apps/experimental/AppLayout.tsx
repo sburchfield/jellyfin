@@ -17,7 +17,7 @@ import AppDrawer, { isDrawerPath } from './components/drawers/AppDrawer';
 
 import './AppOverrides.scss';
 
-export const Component = () => {
+const ExperimentalAppLayout = () => {
     const [ isDrawerActive, setIsDrawerActive ] = useState(false);
     const { user } = useApi();
     const location = useLocation();
@@ -31,7 +31,7 @@ export const Component = () => {
     }, [ isDrawerActive, setIsDrawerActive ]);
 
     return (
-        <MuiThemeProvider>
+        <>
             <Box sx={{ position: 'relative', display: 'flex', height: '100%' }}>
                 <StrictMode>
                     <ElevationScroll elevate={false}>
@@ -75,6 +75,16 @@ export const Component = () => {
             </Box>
             <ThemeCss />
             <CustomCss />
-        </MuiThemeProvider>
+        </>
     );
 };
+
+/**
+ * Keep MUI off the stable startup path while ensuring the experimental layout
+ * hooks run inside the provider.
+ */
+export const Component = () => (
+    <MuiThemeProvider>
+        <ExperimentalAppLayout />
+    </MuiThemeProvider>
+);

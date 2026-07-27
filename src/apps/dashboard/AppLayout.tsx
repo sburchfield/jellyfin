@@ -25,7 +25,7 @@ import { DASHBOARD_APP_PATHS } from './routes/routes';
 
 import './AppOverrides.scss';
 
-export const Component: FC = () => {
+const DashboardAppLayout: FC = () => {
     const [ isDrawerActive, setIsDrawerActive ] = useState(false);
     const location = useLocation();
     const { user } = useApi();
@@ -50,67 +50,75 @@ export const Component: FC = () => {
     }, []);
 
     return (
-        <MuiThemeProvider>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={dateFnsLocale}>
-                <Box sx={{ display: 'flex' }}>
-                    <StrictMode>
-                        <ElevationScroll elevate={false}>
-                            <AppBar
-                                position='fixed'
-                                sx={{
-                                    width: {
-                                        xs: '100%',
-                                        md: isDrawerAvailable ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%'
-                                    },
-                                    ml: {
-                                        xs: 0,
-                                        md: isDrawerAvailable ? DRAWER_WIDTH : 0
-                                    }
-                                }}
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={dateFnsLocale}>
+            <Box sx={{ display: 'flex' }}>
+                <StrictMode>
+                    <ElevationScroll elevate={false}>
+                        <AppBar
+                            position='fixed'
+                            sx={{
+                                width: {
+                                    xs: '100%',
+                                    md: isDrawerAvailable ? `calc(100% - ${DRAWER_WIDTH}px)` : '100%'
+                                },
+                                ml: {
+                                    xs: 0,
+                                    md: isDrawerAvailable ? DRAWER_WIDTH : 0
+                                }
+                            }}
+                        >
+                            <AppToolbar
+                                isBackButtonAvailable={appRouter.canGoBack()}
+                                isDrawerAvailable={!isMediumScreen && isDrawerAvailable}
+                                isDrawerOpen={isDrawerOpen}
+                                onDrawerButtonClick={onToggleDrawer}
+                                buttons={
+                                    <HelpButton />
+                                }
                             >
-                                <AppToolbar
-                                    isBackButtonAvailable={appRouter.canGoBack()}
-                                    isDrawerAvailable={!isMediumScreen && isDrawerAvailable}
-                                    isDrawerOpen={isDrawerOpen}
-                                    onDrawerButtonClick={onToggleDrawer}
-                                    buttons={
-                                        <HelpButton />
-                                    }
-                                >
-                                    {isMetadataManager && (
-                                        <ServerButton />
-                                    )}
+                                {isMetadataManager && (
+                                    <ServerButton />
+                                )}
 
-                                    <AppTabs isDrawerOpen={isDrawerOpen} />
-                                </AppToolbar>
-                            </AppBar>
-                        </ElevationScroll>
+                                <AppTabs isDrawerOpen={isDrawerOpen} />
+                            </AppToolbar>
+                        </AppBar>
+                    </ElevationScroll>
 
-                        {
-                            isDrawerAvailable && (
-                                <AppDrawer
-                                    open={isDrawerOpen}
-                                    onClose={onToggleDrawer}
-                                    onOpen={onToggleDrawer}
-                                />
-                            )
-                        }
-                    </StrictMode>
+                    {
+                        isDrawerAvailable && (
+                            <AppDrawer
+                                open={isDrawerOpen}
+                                onClose={onToggleDrawer}
+                                onOpen={onToggleDrawer}
+                            />
+                        )
+                    }
+                </StrictMode>
 
-                    <Box
-                        component='main'
-                        sx={{
-                            width: '100%',
-                            flexGrow: 1
-                        }}
-                    >
-                        <AppBody>
-                            <Outlet />
-                        </AppBody>
-                    </Box>
+                <Box
+                    component='main'
+                    sx={{
+                        width: '100%',
+                        flexGrow: 1
+                    }}
+                >
+                    <AppBody>
+                        <Outlet />
+                    </AppBody>
                 </Box>
-                <ThemeCss dashboard />
-            </LocalizationProvider>
-        </MuiThemeProvider>
+            </Box>
+            <ThemeCss dashboard />
+        </LocalizationProvider>
     );
 };
+
+/**
+ * The layout reads MUI breakpoints, so the provider must be an ancestor of the
+ * component that calls useMediaQuery instead of part of its returned tree.
+ */
+export const Component: FC = () => (
+    <MuiThemeProvider>
+        <DashboardAppLayout />
+    </MuiThemeProvider>
+);
