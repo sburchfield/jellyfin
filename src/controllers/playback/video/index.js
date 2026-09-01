@@ -196,6 +196,8 @@ export default function (view) {
             nowPlayingPositionSlider.disabled = true;
             btnFastForward.disabled = true;
             btnRewind.disabled = true;
+            btnMobileSkipBack30.disabled = true;
+            btnMobileSkipForward30.disabled = true;
             view.querySelector('.btnSubtitles').classList.add('hide');
             view.querySelector('.btnAudio').classList.add('hide');
             view.querySelector('.osdTitle').innerHTML = '';
@@ -209,6 +211,8 @@ export default function (view) {
         nowPlayingPositionSlider.disabled = false;
         btnFastForward.disabled = false;
         btnRewind.disabled = false;
+        btnMobileSkipBack30.disabled = false;
+        btnMobileSkipForward30.disabled = false;
 
         if (playbackManager.subtitleTracks(player).length) {
             view.querySelector('.btnSubtitles').classList.remove('hide');
@@ -753,6 +757,8 @@ export default function (view) {
 
         btnFastForward.disabled = !playState.CanSeek;
         btnRewind.disabled = !playState.CanSeek;
+        btnMobileSkipBack30.disabled = !playState.CanSeek;
+        btnMobileSkipForward30.disabled = !playState.CanSeek;
         const nowPlayingItem = state.NowPlayingItem || {};
         playbackStartTimeTicks = playState.PlaybackStartTimeTicks;
         updateTimeDisplay(playState.PositionTicks, nowPlayingItem.RunTimeTicks, playState.PlaybackStartTimeTicks, playState.PlaybackRate, playState.BufferedRanges || []);
@@ -1652,6 +1658,8 @@ export default function (view) {
     const endsAtText = view.querySelector('.endsAtText');
     const btnRewind = view.querySelector('.btnRewind');
     const btnFastForward = view.querySelector('.btnFastForward');
+    const btnMobileSkipBack30 = view.querySelector('.btnMobileSkipBack30');
+    const btnMobileSkipForward30 = view.querySelector('.btnMobileSkipForward30');
     const transitionEndEventName = dom.whichTransitionEvent();
     const headerElement = document.querySelector('.skinHeader');
     const osdBottomElement = view.querySelector('.videoOsdBottom-maincontrols');
@@ -1955,8 +1963,14 @@ export default function (view) {
     btnRewind.addEventListener('click', function () {
         playbackManager.rewind(currentPlayer);
     });
+    btnMobileSkipBack30.addEventListener('click', function () {
+        playbackManager.seekRelative(-30 * 1000 * 10000, currentPlayer);
+    });
     btnFastForward.addEventListener('click', function () {
         playbackManager.fastForward(currentPlayer);
+    });
+    btnMobileSkipForward30.addEventListener('click', function () {
+        playbackManager.seekRelative(30 * 1000 * 10000, currentPlayer);
     });
     view.querySelector('.btnAudio').addEventListener('click', showAudioTrackSelection);
     view.querySelector('.btnSubtitles').addEventListener('click', showSubtitleTrackSelection);
@@ -2070,4 +2084,3 @@ export default function (view) {
         });
     }
 }
-

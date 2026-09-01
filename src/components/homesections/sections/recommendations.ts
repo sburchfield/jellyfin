@@ -24,9 +24,13 @@ function getItemDedupeKey(item: BaseItemDto): string {
 function getUniqueRecommendationItems(categories: RecommendationDto[]): BaseItemDto[] {
     const items: BaseItemDto[] = [];
     const seen = new Set<string>();
+    const maxItemsPerCategory = Math.max(0, ...categories.map(category => category.Items?.length || 0));
 
-    for (const category of categories) {
-        for (const item of category.Items || []) {
+    for (let itemIndex = 0; itemIndex < maxItemsPerCategory; itemIndex++) {
+        for (const category of categories) {
+            const item = category.Items?.[itemIndex];
+            if (!item) continue;
+
             const key = getItemDedupeKey(item);
             if (!key || seen.has(key)) continue;
 
@@ -37,6 +41,28 @@ function getUniqueRecommendationItems(categories: RecommendationDto[]): BaseItem
     }
 
     return items;
+}
+
+async function getRecommendationItems(
+    apiClient: ApiClient,
+    userId: string,
+    parentId: string
+): Promise<BaseItemDto[]> {
+    try {
+        const categories = await apiClient.getMovieRecommendations({
+            UserId: userId,
+            ParentId: parentId,
+            Fields: 'PrimaryImageAspectRatio',
+            ImageTypeLimit: 1,
+            CategoryLimit: 6,
+            ItemLimit: 8
+        });
+
+        const watchedCategories = (categories || []).filter(isBecauseYouWatchedCategory);
+        return getUniqueRecommendationItems(watchedCategories.length ? watchedCategories : categories || []);
+    } catch {
+        return [];
+    }
 }
 
 /* Jellyfin's native movie recommendation engine can return several near-identical
@@ -52,31 +78,15 @@ export async function loadRecommendations(
 ): Promise<void> {
     const userId = user.Id || apiClient.getCurrentUserId();
     const moviesView = userViews.find(view => view.CollectionType === CollectionType.Movies);
-    if (!moviesView) return;
-
-    let categories: RecommendationDto[];
-    try {
-        categories = await apiClient.getMovieRecommendations({
-            UserId: userId,
-            ParentId: moviesView.Id,
-            Fields: 'PrimaryImageAspectRatio',
-            ImageTypeLimit: 1,
-            CategoryLimit: 6,
-            ItemLimit: 8
-        });
-    } catch {
-        return;
-    }
-
-    const watchedCategories = (categories || []).filter(isBecauseYouWatchedCategory);
-    const sourceCategories = watchedCategories.length ? watchedCategories : categories || [];
-    const items = getUniqueRecommendationItems(sourceCategories);
-    if (!items.length) return;
+    const moviesViewId = moviesView?.Id;
+    if (!moviesViewId) return;
 
     appendCardRow(elem, {
         title: 'Because you watched',
+        dataMonitor: 'videoplayback,markplayed',
+        dataRefreshInterval: 5 * 60 * 1000,
         fetchData: function () {
-            return Promise.resolve(items);
+            return getRecommendationItems(apiClient, userId, moviesViewId);
         },
         getItemsHtml: function (rowItems: BaseItemDto[]) {
             return cardBuilder.getCardsHtml({

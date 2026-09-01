@@ -3,6 +3,8 @@
     right: 0;
     bottom: 0;
     width: 30em;
+    max-width: calc(100vw - 4em);
+    box-sizing: border-box;
     padding: 1em;
     display: flex;
     flex-direction: column;
@@ -31,20 +33,31 @@
     white-space: nowrap;
 }
 
+.upNextDialog-content {
+    width: 100%;
+    min-width: 0;
+}
+
 .upNextDialog-title {
-    width: 25.5em;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .upNextDialog-buttons {
-    width: 29.75em;
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
     justify-content: end;
     align-content: flex-end;
 }
 
 .upNextDialog-button {
+    max-width: 100%;
+    box-sizing: border-box;
     background: #404040;
     color: #fff;
 }

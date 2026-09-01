@@ -17,7 +17,7 @@ const transitionEndEventName = dom.whichTransitionEvent();
 function getHtml() {
     let html = '';
 
-    html += '<div class="flex flex-direction-column flex-grow">';
+    html += '<div class="flex flex-direction-column flex-grow upNextDialog-content">';
 
     html += '<h2 class="upNextDialog-nextVideoText" style="margin:.25em 0;">&nbsp;</h2>';
 

@@ -146,6 +146,11 @@
     user-select: none;
 }
 
+.videoOsdBottom .btnMobileSkipBack30,
+.videoOsdBottom .btnMobileSkipForward30 {
+    display: none;
+}
+
 .osdTitle,
 .osdTitleSmall {
     margin: 0 1em 0 0;
@@ -211,6 +216,11 @@
     .videoOsdBottom .btnFastForward,
     .videoOsdBottom .btnRewind {
         display: none !important;
+    }
+
+    .videoOsdBottom .btnMobileSkipBack30,
+    .videoOsdBottom .btnMobileSkipForward30 {
+        display: inline-flex;
     }
 }
 

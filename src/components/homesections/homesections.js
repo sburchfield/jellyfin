@@ -15,6 +15,7 @@ import { loadRecentlyAdded } from './sections/recentlyAdded';
 import { loadResume } from './sections/resume';
 
 import { loadGenreRows } from './sections/genreRows';
+import { loadForYou } from './sections/forYou';
 import { loadRecommendations } from './sections/recommendations';
 
 import 'elements/emby-button/paper-icon-button-light';
@@ -45,6 +46,7 @@ function getAllSectionsToShow(userSettings, sectionCount) {
     return sections.filter(s =>
         s !== HomeSectionType.SmallLibraryTiles
         && s !== HomeSectionType.LibraryButtons
+        && s !== HomeSectionType.NextUp
     );
 }
 
@@ -77,9 +79,10 @@ export function loadSections(elem, apiClient, user, userSettings) {
                 return Promise.all(promises)
                 // Timeout for polyfilled CustomElements (webOS 1.2)
                     .then(() => new Promise((resolve) => setTimeout(resolve, 0)))
-                    // Netflix-style discovery rows below the stock sections: movie
-                    // "Because you watched" recs first, then a rotating set of genres.
+                    // Netflix-style discovery rows below the stock sections: personalized
+                    // picks, movie recommendations, then a rotating set of genres.
                     // Appended before resume() so they join the same populate sweep.
+                    .then(() => loadForYou(elem, apiClient, user, customRowOptions))
                     .then(() => loadRecommendations(elem, apiClient, user, userViews, customRowOptions))
                     .then(() => loadGenreRows(elem, apiClient, user, customRowOptions))
                     .then(() => {
@@ -189,4 +192,3 @@ export default {
     pause,
     resume
 };
-

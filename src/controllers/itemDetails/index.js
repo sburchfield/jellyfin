@@ -1543,6 +1543,39 @@ function restoreSeriesEpisodeBrowserFocus(section) {
     }
 }
 
+function getSeriesEpisodeBrowserEpisodes(section, item, apiClient, userId, seasonId, useCache) {
+    const cache = section._episodeBrowserEpisodeCache || new Map();
+    section._episodeBrowserEpisodeCache = cache;
+
+    if (useCache) {
+        const cachedRequest = cache.get(seasonId);
+        if (cachedRequest) {
+            return {
+                cached: true,
+                request: cachedRequest
+            };
+        }
+    }
+
+    const request = apiClient.getEpisodes(item.Id, {
+        seasonId,
+        userId,
+        Fields: 'Overview,PrimaryImageAspectRatio,MediaSourceCount,PremiereDate'
+    }).then(result => result.Items || []).catch(error => {
+        if (cache.get(seasonId) === request) {
+            cache.delete(seasonId);
+        }
+
+        throw error;
+    });
+    cache.set(seasonId, request);
+
+    return {
+        cached: false,
+        request
+    };
+}
+
 function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seasonId, options = {}) {
     const itemsContainer = section.querySelector('.itemsContainer');
     const requestToken = (section._episodeBrowserRequestToken || 0) + 1;
@@ -1552,15 +1585,20 @@ function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seas
     setSeriesEpisodeBrowserStatus(section, '');
     itemsContainer.setAttribute('aria-busy', 'true');
 
-    if (section.dataset.renderedSeasonId !== seasonId) {
+    const episodesRequest = getSeriesEpisodeBrowserEpisodes(
+        section,
+        item,
+        apiClient,
+        userId,
+        seasonId,
+        options.useCache
+    );
+
+    if (!episodesRequest.cached && section.dataset.renderedSeasonId !== seasonId) {
         itemsContainer.innerHTML = getSeriesEpisodeBrowserLoadingHtml();
     }
 
-    return apiClient.getEpisodes(item.Id, {
-        seasonId,
-        userId,
-        Fields: 'Overview,PrimaryImageAspectRatio,MediaSourceCount,PremiereDate'
-    }).then(result => {
+    return episodesRequest.request.then(episodes => {
         if (
             requestToken !== section._episodeBrowserRequestToken
             || section.dataset.seriesId !== item.Id
@@ -1568,7 +1606,6 @@ function renderSeriesEpisodeBrowserSeason(section, item, apiClient, userId, seas
             return;
         }
 
-        const episodes = result.Items || [];
         section.dataset.renderedSeasonId = seasonId;
         itemsContainer.removeAttribute('aria-busy');
         itemsContainer.setAttribute('data-parentid', seasonId);
@@ -1675,6 +1712,7 @@ function renderSeriesEpisodeBrowser(page, item, options = {}) {
 
     if (!isSameSeries) {
         section._episodeBrowserRequestToken = 0;
+        section._episodeBrowserEpisodeCache = new Map();
         section.dataset.focusedEpisodeId = '';
         section.dataset.nextUpEpisodeId = '';
         section.dataset.renderedSeasonId = '';
@@ -1753,6 +1791,13 @@ function renderSeriesEpisodeBrowser(page, item, options = {}) {
             seasonSelect.value = season.Id;
             setSeriesEpisodeBrowserSelectedSeason(section, item, season);
 
+            if (
+                seasonOptions.useCache
+                && section.dataset.renderedSeasonId === season.Id
+            ) {
+                return Promise.resolve();
+            }
+
             return renderSeriesEpisodeBrowserSeason(
                 section,
                 item,
@@ -1767,10 +1812,10 @@ function renderSeriesEpisodeBrowser(page, item, options = {}) {
             section,
             seasons,
             selectedSeason,
-            seasonId => selectSeason(seasonId)
+            seasonId => selectSeason(seasonId, { useCache: true })
         );
 
-        seasonSelect.onchange = () => selectSeason(seasonSelect.value);
+        seasonSelect.onchange = () => selectSeason(seasonSelect.value, { useCache: true });
         setSeriesEpisodeBrowserSelectedSeason(section, item, selectedSeason);
 
         if (section.dataset.focusSeasonRequested === 'true') {
@@ -1794,6 +1839,7 @@ function resetSeriesEpisodeBrowser(page) {
     const section = page.querySelector('#childrenCollapsible');
     section._episodeBrowserMetadataRequestToken = (section._episodeBrowserMetadataRequestToken || 0) + 1;
     section._episodeBrowserRequestToken = (section._episodeBrowserRequestToken || 0) + 1;
+    section._episodeBrowserEpisodeCache = null;
     section.dataset.seriesId = '';
     section.dataset.selectedSeasonId = '';
     section.dataset.renderedSeasonId = '';

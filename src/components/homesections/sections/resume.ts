@@ -39,6 +39,68 @@ function getItemsToResumeFn(
     };
 }
 
+function mergeContinueWatchingItems(
+    resumableItems: BaseItemDto[],
+    nextUpItems: BaseItemDto[],
+    limit: number
+): BaseItemDto[] {
+    const items: BaseItemDto[] = [];
+    const seen = new Set<string>();
+    const maxLength = Math.max(resumableItems.length, nextUpItems.length);
+
+    for (let index = 0; index < maxLength && items.length < limit; index++) {
+        for (const item of [resumableItems[index], nextUpItems[index]]) {
+            if (!item?.Id || seen.has(item.Id)) continue;
+
+            seen.add(item.Id);
+            items.push(item);
+            if (items.length >= limit) break;
+        }
+    }
+
+    return items;
+}
+
+function getItemsToContinueWatchingFn(
+    serverId: string,
+    userSettings: UserSettings,
+    { enableOverflow }: SectionOptions
+) {
+    return async function () {
+        const apiClient = ServerConnections.getApiClient(serverId);
+        const userId = apiClient.getCurrentUserId();
+        const limit = enableOverflow ? 12 : 5;
+        const oldestDateForNextUp = new Date();
+        oldestDateForNextUp.setDate(oldestDateForNextUp.getDate() - userSettings.maxDaysForNextUp());
+
+        const [resumableResult, nextUpResult] = await Promise.all([
+            apiClient.getResumableItems(userId, {
+                Limit: limit,
+                Recursive: true,
+                Fields: 'PrimaryImageAspectRatio',
+                ImageTypeLimit: 1,
+                EnableImageTypes: 'Primary,Backdrop,Thumb',
+                EnableTotalRecordCount: false,
+                MediaTypes: 'Video'
+            }),
+            apiClient.getNextUpEpisodes({
+                Limit: limit,
+                Fields: 'PrimaryImageAspectRatio',
+                UserId: userId,
+                ImageTypeLimit: 1,
+                EnableImageTypes: 'Primary,Backdrop,Thumb',
+                EnableTotalRecordCount: false,
+                DisableFirstEpisode: false,
+                NextUpDateCutoff: oldestDateForNextUp.toISOString(),
+                EnableResumable: false,
+                EnableRewatching: userSettings.enableRewatchingInNextUp()
+            })
+        ]);
+
+        return mergeContinueWatchingItems(resumableResult.Items || [], nextUpResult.Items || [], limit);
+    };
+}
+
 function getItemsToResumeHtmlFn(
     useEpisodeImages: boolean,
     mediaType: BaseItemKind,
@@ -99,7 +161,9 @@ export function loadResume(
 
     const itemsContainer: SectionContainerElement | null = elem.querySelector('.itemsContainer');
     if (!itemsContainer) return;
-    itemsContainer.fetchData = getItemsToResumeFn(mediaType, apiClient.serverId(), options);
+    itemsContainer.fetchData = mediaType === 'Video' ?
+        getItemsToContinueWatchingFn(apiClient.serverId(), userSettings, options) :
+        getItemsToResumeFn(mediaType, apiClient.serverId(), options);
     itemsContainer.getItemsHtml = getItemsToResumeHtmlFn(userSettings.useEpisodeImagesInNextUpAndResume(), mediaType, options);
     itemsContainer.parentContainer = elem;
 }
